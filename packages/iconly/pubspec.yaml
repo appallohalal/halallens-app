@@ -1,0 +1,24 @@
+name: iconly
+description: Iconly icons, patched so icons are IconData values instead of a subclass.
+version: 1.0.1
+publish_to: "none"
+
+environment:
+  sdk: ^3.11.1
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: IconlyBold
+      fonts:
+        - asset: fonts/IconlyBold.ttf
+    - family: IconlyBroken
+      fonts:
+        - asset: fonts/IconlyBroken.ttf
+    - family: IconlyLight
+      fonts:
+        - asset: fonts/IconlyLight.ttf
