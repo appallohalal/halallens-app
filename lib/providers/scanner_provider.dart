@@ -36,7 +36,7 @@ class ScannerProvider extends ChangeNotifier {
     try {
       // Initialize Groq AI if API key is configured
       if (AppConfig.isAiEnabled) {
-        _groqService.initialize();
+        await _groqService.initialize();
       }
       notifyListeners();
     } catch (e) {
@@ -59,7 +59,7 @@ class ScannerProvider extends ChangeNotifier {
 
     try {
       if (AppConfig.isAiEnabled && !_groqService.isAvailable) {
-        _groqService.initialize();
+        await _groqService.initialize();
       }
 
       final fetchedProduct = await _apiService.fetchProduct(barcode);
@@ -116,7 +116,7 @@ class ScannerProvider extends ChangeNotifier {
 
     try {
       if (AppConfig.isAiEnabled && !_groqService.isAvailable) {
-        _groqService.initialize();
+        await _groqService.initialize();
       }
 
       _product = Product(
@@ -170,7 +170,7 @@ class ScannerProvider extends ChangeNotifier {
 
     try {
       if (AppConfig.isAiEnabled && !_groqService.isAvailable) {
-        _groqService.initialize();
+        await _groqService.initialize();
       }
 
       _product = Product(

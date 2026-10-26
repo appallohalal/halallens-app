@@ -1,27 +1,33 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
+import '../config/groq_config.dart';
 import '../models/halal_result.dart';
 import '../models/product.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-/// AI-powered halal analysis service using Groq.
+/// AI-powered halal analysis service.
 ///
-/// Sends product ingredients to Groq AI for expert-level halal analysis.
-/// Returns structured results with status and detailed reasoning instantly.
+/// Follows the established design pattern of the project (similar to AdService / AdConfig):
+/// - Centralized server configuration via GroqConfig.
+/// - NO API keys or AI models hardcoded in the mobile app.
+/// - Primary: Server proxy (/api/v1/groq/analyze) with real-time telemetry logging.
+/// - Fallback: Direct Groq execution using remote GroqConfig parameters with Supabase telemetry logging.
 class GroqHalalService {
   bool _isInitialized = false;
 
-  /// Initializes the Groq service.
-  void initialize() {
-    if (_isInitialized || !AppConfig.isAiEnabled) return;
+  /// Initializes the Groq service by syncing with GroqConfig.
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    await GroqConfig.syncFromBackend();
     _isInitialized = true;
   }
 
-  /// Whether the service is available.
-  bool get isAvailable => _isInitialized && AppConfig.groqApiKey.isNotEmpty;
+  /// Whether AI service is available (governed dynamically by GroqConfig).
+  bool get isAvailable => _isInitialized && GroqConfig.isEnabled;
 
-  /// Analyzes product ingredients using Groq AI.
+  /// Analyzes product ingredients using server-managed Groq AI.
   Future<HalalResult?> analyzeIngredients({
     required String productName,
     required String ingredientsText,
@@ -29,87 +35,227 @@ class GroqHalalService {
     required List<String> additives,
     String? imageBase64,
     String language = 'English',
+    String? barcode,
   }) async {
     if (!isAvailable) return null;
 
+    // 1. Primary approach: Call Backend Proxy Server
+    // The server handles Groq execution and telemetry logging in groq_api_logs.
     try {
-      final prompt = _buildPrompt(
+      final backendResult = await _analyzeViaBackend(
         productName: productName,
         ingredientsText: ingredientsText,
         parsedIngredients: parsedIngredients,
         additives: additives,
-        hasImage: imageBase64 != null,
+        imageBase64: imageBase64,
         language: language,
+        barcode: barcode,
       );
-
-      final modelName = imageBase64 != null
-          ? 'qwen/qwen3.8-27b'
-          : 'openai/gpt-oss-120b';
-
-      final List<Map<String, dynamic>> messages = [
-        {
-          'role': 'system',
-          'content':
-              'You are a Senior Halal Certification Auditor and Islamic Food Technologist. You specialize in identifying hidden animal derivatives, cross-contamination risks, and checking E-numbers against the latest Global Halal Standards. You MUST reply with ONLY valid JSON.',
-        },
-      ];
-
-      if (imageBase64 != null) {
-        messages.add({
-          'role': 'user',
-          'content': [
-            {'type': 'text', 'text': prompt},
-            {
-              'type': 'image_url',
-              'image_url': {'url': 'data:image/jpeg;base64,$imageBase64'},
-            },
-          ],
-        });
-      } else {
-        messages.add({'role': 'user', 'content': prompt});
+      if (backendResult != null) {
+        return backendResult;
       }
-
-      final response = await http.post(
-        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
-        headers: {
-          'Authorization': 'Bearer ${AppConfig.groqApiKey}',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'model': modelName,
-          'messages': messages,
-          'temperature': 0.1,
-          'max_completion_tokens': 2048,
-          'response_format': {'type': 'json_object'},
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        var detail = 'Groq ${response.statusCode}';
-        try {
-          final error = json.decode(response.body);
-          final message = error['error']?['message'];
-          if (message is String && message.isNotEmpty) detail = message;
-        } catch (_) {}
-        throw Exception(detail);
-      }
-
-      final data = json.decode(response.body);
-      final message = data['choices'][0]['message'] as Map<String, dynamic>;
-      final text = (message['content'] ?? message['reasoning'])?.toString();
-
-      if (text == null || text.isEmpty) {
-        return null;
-      }
-
-      return _parseResponse(text);
     } catch (e) {
-      // Silently fall back back to local database on AI failure
+      if (kDebugMode) {
+        debugPrint('[GroqHalalService] Backend proxy request failed: $e. Falling back to direct resilient execution...');
+      }
+    }
+
+    // 2. Resilient Fallback: Direct execution using remote GroqConfig
+    // If backend proxy is unreachable, use settings synced in GroqConfig.
+    try {
+      return await _analyzeViaDirectGroq(
+        productName: productName,
+        ingredientsText: ingredientsText,
+        parsedIngredients: parsedIngredients,
+        additives: additives,
+        imageBase64: imageBase64,
+        language: language,
+        barcode: barcode,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[GroqHalalService] Direct execution also failed: $e');
+      }
       return null;
     }
   }
 
-  /// Builds a detailed prompt for Groq AI.
+  /// Primary: Route via backend server proxy (/api/v1/groq/analyze)
+  Future<HalalResult?> _analyzeViaBackend({
+    required String productName,
+    required String ingredientsText,
+    required List<ParsedIngredient> parsedIngredients,
+    required List<String> additives,
+    String? imageBase64,
+    required String language,
+    String? barcode,
+  }) async {
+    final url = Uri.parse('${AppConfig.backendBaseUrl}/groq/analyze');
+    final response = await http
+        .post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'productName': productName,
+            'ingredientsText': ingredientsText,
+            'parsedIngredients': parsedIngredients.map((e) => e.toJson()).toList(),
+            'additives': additives,
+            'imageBase64': ?imageBase64,
+            'language': language,
+            'barcode': ?barcode,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true && data['result'] != null) {
+        final resultJson = data['result'] as Map<String, dynamic>;
+        if (resultJson['is_not_food'] == true) {
+          return null;
+        }
+        return HalalResult.fromJson(resultJson);
+      }
+    }
+    return null;
+  }
+
+  /// Resilient Fallback: Direct execution using parameters from GroqConfig
+  Future<HalalResult?> _analyzeViaDirectGroq({
+    required String productName,
+    required String ingredientsText,
+    required List<ParsedIngredient> parsedIngredients,
+    required List<String> additives,
+    String? imageBase64,
+    required String language,
+    String? barcode,
+  }) async {
+    final startTime = DateTime.now();
+
+    final apiKey = GroqConfig.apiKey;
+    if (apiKey.isEmpty) return null;
+
+    final modelName = imageBase64 != null
+        ? GroqConfig.visionModel
+        : GroqConfig.model;
+
+    final prompt = _buildPrompt(
+      productName: productName,
+      ingredientsText: ingredientsText,
+      parsedIngredients: parsedIngredients,
+      additives: additives,
+      hasImage: imageBase64 != null,
+      language: language,
+    );
+
+    final List<Map<String, dynamic>> messages = [
+      {
+        'role': 'system',
+        'content':
+            'You are a Senior Halal Certification Auditor and Islamic Food Technologist. You specialize in identifying hidden animal derivatives, cross-contamination risks, and checking E-numbers against the latest Global Halal Standards. You MUST reply with ONLY valid JSON.',
+      },
+    ];
+
+    if (imageBase64 != null) {
+      messages.add({
+        'role': 'user',
+        'content': [
+          {'type': 'text', 'text': prompt},
+          {
+            'type': 'image_url',
+            'image_url': {'url': 'data:image/jpeg;base64,$imageBase64'},
+          },
+        ],
+      });
+    } else {
+      messages.add({'role': 'user', 'content': prompt});
+    }
+
+    final groqResponse = await http.post(
+      Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'model': modelName,
+        'messages': messages,
+        'temperature': GroqConfig.temperature,
+        'max_completion_tokens': GroqConfig.maxTokens,
+        'response_format': {'type': 'json_object'},
+      }),
+    ).timeout(const Duration(seconds: 20));
+
+    final latencyMs = DateTime.now().difference(startTime).inMilliseconds;
+
+    // Log telemetry into Supabase groq_api_logs
+    _logTelemetry(
+      model: modelName,
+      barcode: barcode,
+      latencyMs: latencyMs,
+      statusCode: groqResponse.statusCode,
+      status: groqResponse.statusCode == 200 ? 'SUCCESS' : 'ERROR',
+      responseBody: groqResponse.body,
+    );
+
+    if (groqResponse.statusCode != 200) return null;
+
+    final data = json.decode(groqResponse.body);
+    final message = data['choices']?[0]?['message'] as Map<String, dynamic>?;
+    final text = (message?['content'] ?? message?['reasoning'])?.toString();
+    if (text == null || text.isEmpty) return null;
+
+    return _parseResponse(text);
+  }
+
+  /// Logs telemetry asynchronously into Supabase groq_api_logs table
+  void _logTelemetry({
+    required String model,
+    String? barcode,
+    required int latencyMs,
+    required int statusCode,
+    required String status,
+    required String responseBody,
+  }) async {
+    try {
+      int promptTokens = 0;
+      int completionTokens = 0;
+      String? errorMessage;
+
+      try {
+        final parsed = json.decode(responseBody);
+        if (statusCode == 200) {
+          promptTokens = parsed['usage']?['prompt_tokens'] ?? 0;
+          completionTokens = parsed['usage']?['completion_tokens'] ?? 0;
+        } else {
+          errorMessage = parsed['error']?['message'] ?? 'Status $statusCode';
+        }
+      } catch (_) {}
+
+      await http.post(
+        Uri.parse('${AppConfig.supabaseUrl}/rest/v1/groq_api_logs'),
+        headers: {
+          'apikey': AppConfig.supabaseAnonKey,
+          'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: json.encode({
+          'endpoint': '/openai/v1/chat/completions',
+          'model': model,
+          'barcode': barcode,
+          'prompt_tokens': promptTokens,
+          'completion_tokens': completionTokens,
+          'latency_ms': latencyMs,
+          'status_code': statusCode,
+          'status': status,
+          'error_message': errorMessage,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  /// Builds prompt for Groq AI
   String _buildPrompt({
     required String productName,
     required String ingredientsText,
@@ -118,7 +264,6 @@ class GroqHalalService {
     bool hasImage = false,
     String language = 'English',
   }) {
-    // Build ingredient list for the prompt
     final ingredientLines = <String>[];
 
     for (final ing in parsedIngredients) {
@@ -154,7 +299,7 @@ $initialInstruction
 Before analyzing, you MUST first determine if the provided text actually contains real food/beverage ingredients.
 If the input is ANY of the following, you MUST return the "not_food" response shown below:
 - Random words, greetings, or single non-ingredient words (e.g. "hi", "hello", "test")
-- Profanity, slang, or offensive language (e.g. swear words — do NOT interpret them literally as food)
+- Profanity, slang, or offensive language
 - General sentences, messages, or conversations that are not ingredient lists
 - Gibberish, nonsensical text, or text that does not resemble a food ingredient list
 - Very short text (1-2 words) that is clearly not a food ingredient name
@@ -189,12 +334,6 @@ Internal Logic for Classification:
    - Dairy (from Halal animals), Fish, and Eggs.
    - Specifically confirm "Plant-based Lecithin" or "Soy Lecithin" as Halal.
 
-Critical Audit Instructions:
-- Cross-Reference: Check for "hidden" animal fats in snack foods (e.g., Mono-diglycerides).
-- Professional Tone: Provide a clear "reason" for each ingredient based on its chemical/biological origin.
-- Majority Rule: If the product is 100% plant-based but contains one minor "Natural Flavouring" of unknown source, mark "overall_status" as "halal" but add a note in the "overall_reason" about the minor doubtful item.
-- Strict Haram: If even ONE tiny amount of pork or alcohol is present, the "overall_status" MUST be "haram".
-
 Output JSON Structure (MANDATORY):
 {
   "overall_status": "halal|haram|doubtful|not_food",
@@ -203,29 +342,24 @@ Output JSON Structure (MANDATORY):
     {
       "name": "Original Name",
       "status": "halal|haram|doubtful",
-      "reason": "Expert techical/religious reason for this classification (IN $language)."
+      "reason": "Expert technical/religious reason for this classification (IN $language)."
     }
   ]
 }
 ''';
   }
 
-  /// Parses the JSON response from Groq into a HalalResult.
-  /// Returns null if AI determines the input is not a food ingredient list.
+  /// Parses JSON response into HalalResult
   HalalResult? _parseResponse(String responseText) {
     try {
       final data = json.decode(responseText) as Map<String, dynamic>;
 
-      // Check if AI flagged input as not food ingredients
       final overallStatusStr = data['overall_status']?.toString() ?? 'doubtful';
       if (overallStatusStr.toLowerCase().trim() == 'not_food') {
         return null;
       }
 
-      // Parse overall status
       final overallStatus = _parseStatus(overallStatusStr);
-
-      // Parse individual ingredients
       final ingredientResults = <IngredientResult>[];
       final haramList = <String>[];
       final doubtfulList = <String>[];
@@ -265,7 +399,7 @@ Output JSON Structure (MANDATORY):
         doubtfulIngredients: doubtfulList,
         halalIngredients: halalList,
       );
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
@@ -279,7 +413,6 @@ Output JSON Structure (MANDATORY):
       case 'doubtful':
       case 'mushbooh':
       case 'questionable':
-        return HalalStatus.doubtful;
       default:
         return HalalStatus.doubtful;
     }

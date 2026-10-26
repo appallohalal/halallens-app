@@ -8,6 +8,7 @@ import 'services/theme_service.dart';
 import 'services/history_service.dart';
 import 'services/saved_product_service.dart';
 import 'services/ad_service.dart';
+import 'config/groq_config.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -18,6 +19,7 @@ Future<void> main() async {
   await HistoryService.init();
   await SavedProductService.init();
   await AdService.initialize(); // No-op if ads disabled in AdConfig
+  await GroqConfig.syncFromBackend(); // Sync remote Groq AI configuration
 
   final themeService = ThemeService();
 
