@@ -7,6 +7,10 @@ import 'home_screen.dart';
 import 'onboarding_screen.dart';
 import 'no_connection_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'auth_screen.dart';
+import 'banned_screen.dart';
+import '../config/auth_config.dart';
+import '../services/auth_service.dart';
 import '../theme/app_fonts.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -40,15 +44,41 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
+    // Verify live ban status from Supabase
+    await AuthService.instance.checkBanStatus();
+    if (!mounted) return;
+
+    if (AuthService.instance.isBanned) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const BannedScreen()),
+      );
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
     if (!mounted) return;
 
     if (hasSeenOnboarding) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      if (AuthConfig.isForceUserAuth && !AuthService.instance.isLoggedIn) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => AuthScreen(
+              isMandatory: true,
+              onSuccess: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
+              },
+            ),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const OnboardingScreen()),

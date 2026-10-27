@@ -9,6 +9,8 @@ import 'static_page_screen.dart';
 import 'language_screen.dart';
 import '../utils/language_helper.dart';
 import '../services/theme_service.dart';
+import '../services/auth_service.dart';
+import 'auth_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -49,6 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildSectionTitle('Account & Profile'),
+              _buildAccountTile(context),
+              const SizedBox(height: 16),
               _buildSectionTitle('settings.sections.features'.tr()),
               _buildSettingsTile(
                 icon: IconlyLight.time_circle,
@@ -407,4 +412,172 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
+  Widget _buildAccountTile(BuildContext context) {
+    return Consumer<AuthService>(
+      builder: (context, auth, _) {
+        final isLoggedIn = auth.isLoggedIn;
+        final user = auth.currentUser;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.getCardColor(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isLoggedIn
+                  ? AppTheme.primaryBlue.withValues(alpha: 0.3)
+                  : AppTheme.getBorderColor(context),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        isLoggedIn ? IconlyBold.profile : IconlyLight.user,
+                        color: AppTheme.primaryBlue,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isLoggedIn
+                                ? (user?.name.isNotEmpty == true
+                                    ? user!.name
+                                    : (user?.username ?? 'User'))
+                                : 'Guest Account',
+                            style: AppFonts.primary(
+                              context,
+                              color: AppTheme.getTextPrimary(context),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isLoggedIn
+                                ? '${user?.email ?? ''}${user?.city.isNotEmpty == true ? ' • ${user!.city}, ${user.country}' : ''}'
+                                : 'Sign in to sync your data',
+                            style: AppFonts.primary(
+                              context,
+                              color: AppTheme.getTextSecondary(context),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isLoggedIn)
+                      IconButton(
+                        tooltip: 'Sign Out',
+                        icon: const Icon(
+                          IconlyLight.logout,
+                          color: Colors.redAccent,
+                          size: 22,
+                        ),
+                        onPressed: () => _confirmSignOut(context),
+                      ),
+                  ],
+                ),
+                if (!isLoggedIn) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(IconlyLight.login, size: 18),
+                      label: Text(
+                        'Sign In / Register',
+                        style: AppFonts.primary(
+                          context,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AuthScreen(isMandatory: false),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmSignOut(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.getCardColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Sign Out',
+          style: AppFonts.primary(
+            context,
+            color: AppTheme.getTextPrimary(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to sign out of your HalalLens account?',
+          style: AppFonts.primary(
+            context,
+            color: AppTheme.getTextSecondary(context),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: AppFonts.primary(context)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await AuthService.instance.logout();
+            },
+            child: Text('Sign Out', style: AppFonts.primary(context)),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

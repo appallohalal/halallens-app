@@ -8,7 +8,9 @@ import 'services/theme_service.dart';
 import 'services/history_service.dart';
 import 'services/saved_product_service.dart';
 import 'services/ad_service.dart';
+import 'services/auth_service.dart';
 import 'config/groq_config.dart';
+import 'config/auth_config.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -18,8 +20,10 @@ Future<void> main() async {
   await EasyLocalization.ensureInitialized();
   await HistoryService.init();
   await SavedProductService.init();
+  await AuthService.instance.init(); // Initialize user session cache
   await AdService.initialize(); // No-op if ads disabled in AdConfig
   await GroqConfig.syncFromBackend(); // Sync remote Groq AI configuration
+  await AuthConfig.syncFromBackend(); // Sync remote Mandatory Registration toggle
 
   final themeService = ThemeService();
 
@@ -52,6 +56,7 @@ Future<void> main() async {
         providers: [
           ChangeNotifierProvider(create: (_) => ScannerProvider()),
           ChangeNotifierProvider.value(value: themeService),
+          ChangeNotifierProvider.value(value: AuthService.instance),
         ],
         child: const HalalLensApp(),
       ),

@@ -7,7 +7,10 @@ import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_fonts.dart';
 import '../services/theme_service.dart';
+import '../services/auth_service.dart';
+import '../config/auth_config.dart';
 import 'home_screen.dart';
+import 'auth_screen.dart';
 
 class ThemeOnboardingScreen extends StatefulWidget {
   const ThemeOnboardingScreen({super.key});
@@ -33,9 +36,24 @@ class _ThemeOnboardingScreenState extends State<ThemeOnboardingScreen> {
     await prefs.setBool('hasSeenOnboarding', true);
 
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    if (AuthConfig.isForceUserAuth && !AuthService.instance.isLoggedIn) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => AuthScreen(
+            isMandatory: true,
+            onSuccess: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
   }
 
   @override

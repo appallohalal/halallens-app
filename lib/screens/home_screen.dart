@@ -9,6 +9,10 @@ import 'scan_screen.dart';
 import 'result_screen.dart';
 import 'text_scan_screen.dart';
 import 'settings_screen.dart';
+import 'auth_screen.dart';
+import 'banned_screen.dart';
+import '../config/auth_config.dart';
+import '../services/auth_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_fonts.dart';
 
@@ -26,11 +30,17 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ScannerProvider>().initialize();
       AdService.instance.preloadInterstitial();
+      AuthService.instance.checkBanStatus();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthService>(context);
+    if (auth.isBanned) {
+      return BannedScreen(reason: auth.banReason);
+    }
+
     return Scaffold(
       body: Container(
         color: AppTheme.getBackgroundColor(context),
@@ -45,8 +55,116 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const SizedBox(height: 16),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            Consumer<AuthService>(
+                              builder: (context, auth, _) {
+                                if (auth.isLoggedIn) {
+                                  final user = auth.currentUser!;
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SettingsScreen(),
+                                        ),
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryBlue
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: AppTheme.primaryBlue
+                                              .withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            IconlyLight.profile,
+                                            size: 16,
+                                            color: AppTheme.primaryBlue,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            user.name.isNotEmpty
+                                                ? user.name
+                                                : user.username,
+                                            style: AppFonts.primary(
+                                              context,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppTheme.getTextPrimary(
+                                                context,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const AuthScreen(
+                                                isMandatory: false,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.getCardColor(context),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: AppTheme.getBorderColor(
+                                            context,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            IconlyLight.login,
+                                            size: 15,
+                                            color: AppTheme.primaryBlue,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'Sign In',
+                                            style: AppFonts.primary(
+                                              context,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppTheme.getTextPrimary(
+                                                context,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
                             IconButton(
                               onPressed: () {
                                 Navigator.push(
@@ -326,7 +444,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _navigateToScan(BuildContext context) {
+  Future<bool> _checkAuthBeforeAction(BuildContext context) async {
+    if (AuthConfig.isForceUserAuth && !AuthService.instance.isLoggedIn) {
+      final success = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AuthScreen(isMandatory: true),
+        ),
+      );
+      return success == true || AuthService.instance.isLoggedIn;
+    }
+    return true;
+  }
+
+  Future<void> _navigateToScan(BuildContext context) async {
+    final allowed = await _checkAuthBeforeAction(context);
+    if (!allowed || !context.mounted) return;
     context.read<ScannerProvider>().reset();
     Navigator.push(
       context,
@@ -334,7 +467,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _navigateToTextScan(BuildContext context) {
+  Future<void> _navigateToTextScan(BuildContext context) async {
+    final allowed = await _checkAuthBeforeAction(context);
+    if (!allowed || !context.mounted) return;
     context.read<ScannerProvider>().reset();
     Navigator.push(
       context,
@@ -342,7 +477,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showManualEntry(BuildContext context) {
+  Future<void> _showManualEntry(BuildContext context) async {
+    final allowed = await _checkAuthBeforeAction(context);
+    if (!allowed || !context.mounted) return;
     final controller = TextEditingController();
     showModalBottomSheet(
       context: context,
