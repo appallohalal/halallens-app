@@ -15,7 +15,6 @@ import 'edit_profile_screen.dart';
 import '../config/cms_config.dart';
 import '../config/auth_config.dart';
 import '../widgets/support_dialog.dart';
-import 'support_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
