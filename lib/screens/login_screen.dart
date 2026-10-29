@@ -164,8 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   // App Brand Logo
                   Center(
                     child: Container(
-                      width: 76,
-                      height: 76,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
                         color: AppTheme.primaryBlue,
                         borderRadius: BorderRadius.circular(22),
@@ -177,10 +177,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        IconlyBold.shield_done,
-                        size: 40,
-                        color: Colors.white,
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.asset(
+                        'assets/app_logo.png',
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),

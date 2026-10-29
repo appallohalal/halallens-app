@@ -5,6 +5,7 @@ import '../providers/scanner_provider.dart';
 import '../services/ad_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ad_native_widget.dart';
+import '../widgets/geo_ad_banner_widget.dart';
 import '../widgets/shared_widgets.dart';
 import 'package:iconly/iconly.dart';
 import '../models/history_item.dart';
@@ -13,6 +14,7 @@ import '../services/saved_product_service.dart';
 
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_fonts.dart';
+import 'text_scan_screen.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
@@ -158,6 +160,284 @@ class ResultScreen extends StatelessWidget {
   }
 
   Widget _buildErrorState(BuildContext context, ScannerProvider provider) {
+    final barcode = provider.lastScannedBarcode;
+    final isBarcodeNotFound = barcode != null && barcode.isNotEmpty;
+
+    if (isBarcodeNotFound) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  IconlyLight.scan,
+                  size: 38,
+                  color: AppTheme.primaryBlue,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'result.fallback_title'.tr(),
+                textAlign: TextAlign.center,
+                style: AppFonts.primary(
+                  context,
+                  color: AppTheme.getTextPrimary(context),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.isDark(context)
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.isDark(context)
+                        ? Colors.white12
+                        : Colors.black12,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.qr_code_2_rounded,
+                      size: 18,
+                      color: AppTheme.primaryBlue,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${"result.barcode_prefix".tr()}$barcode',
+                      style: AppFonts.primary(
+                        context,
+                        color: AppTheme.getTextPrimary(context),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'result.fallback_desc'.tr(),
+                textAlign: TextAlign.center,
+                style: AppFonts.primary(
+                  context,
+                  color: AppTheme.getTextSecondary(context),
+                  fontSize: 14,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Action 1: Camera Vision AI (Primary Hero Card)
+              InkWell(
+                onTap: () {
+                  AdService.instance.showInterstitial(
+                    onClosed: () {
+                      if (!context.mounted) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TextScanScreen(
+                            autoLaunchCamera: true,
+                            initialBarcode: barcode,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          IconlyBold.camera,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'result.scan_label_ai'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'result.scan_label_ai_desc'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Action 2: Manual text entry (Secondary Card)
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TextScanScreen(
+                        autoLaunchCamera: false,
+                        initialBarcode: barcode,
+                      ),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.getCardColor(context),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppTheme.isDark(context)
+                          ? Colors.white12
+                          : Colors.black12,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          IconlyLight.edit,
+                          color: AppTheme.primaryBlue,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'result.manual_input_ingredients'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: AppTheme.getTextPrimary(context),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'result.manual_input_ingredients_desc'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: AppTheme.getTextSecondary(context),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: AppTheme.getTextSecondary(context),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Action 3: Scan another product
+              TextButton.icon(
+                onPressed: () {
+                  AdService.instance.showInterstitial(
+                    onClosed: () {
+                      if (!context.mounted) return;
+                      provider.reset();
+                      if (Navigator.canPop(context)) Navigator.pop(context);
+                    },
+                  );
+                },
+                icon: const Icon(IconlyLight.scan, size: 18),
+                label: Text(
+                  'result.scan_another'.tr(),
+                  style: AppFonts.primary(
+                    context,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Default error state (e.g. network failure)
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -189,7 +469,7 @@ class ResultScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              provider.errorMessage!,
+              provider.errorMessage ?? 'errors.generic_error'.tr(),
               textAlign: TextAlign.center,
               style: AppFonts.primary(
                 context,
@@ -213,6 +493,7 @@ class ResultScreen extends StatelessWidget {
                     },
                   );
                 },
+                icon: const Icon(IconlyLight.scan),
                 label: Text('result.scan_again'.tr()),
               ),
             ),
@@ -402,6 +683,9 @@ class ResultScreen extends StatelessWidget {
           _buildSummarySection(context, result),
           const SizedBox(height: 20),
 
+          // Geo-Targeted Local Partner Banner (shown if user is within campaign radius)
+          const GeoAdBannerWidget(margin: EdgeInsets.only(bottom: 16)),
+
           // Native Ad
           const AdNativeWidget(),
           const SizedBox(height: 16),
@@ -471,18 +755,18 @@ class ResultScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppTheme.doubtfulAmber.withValues(alpha: 0.08),
+              color: AppTheme.getDoubtfulBgColor(context),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppTheme.doubtfulAmber.withValues(alpha: 0.2),
+                color: AppTheme.getDoubtfulBorderColor(context),
               ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
+                Icon(
                   IconlyLight.info_circle,
-                  color: AppTheme.doubtfulAmber,
+                  color: AppTheme.getDoubtfulTextColor(context),
                   size: 18,
                 ),
                 const SizedBox(width: 10),
@@ -491,10 +775,10 @@ class ResultScreen extends StatelessWidget {
                     'result.disclaimer'.tr(),
                     style: AppFonts.primary(
                       context,
-                      color: AppTheme.doubtfulAmber.withValues(alpha: 0.8),
+                      color: AppTheme.getDoubtfulTextColor(context),
                       fontSize: 12,
                       height: 1.5,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -514,21 +798,27 @@ class ResultScreen extends StatelessWidget {
           context,
           '${result.haramIngredients.length}',
           'result.haram_label'.tr(),
-          AppTheme.haramRed,
+          AppTheme.getHaramTextColor(context),
+          AppTheme.getHaramBgColor(context),
+          AppTheme.getHaramBorderColor(context),
         ),
         const SizedBox(width: 8),
         _buildSummaryChip(
           context,
           '${result.doubtfulIngredients.length}',
           'result.doubtful_label'.tr(),
-          AppTheme.doubtfulAmber,
+          AppTheme.getDoubtfulTextColor(context),
+          AppTheme.getDoubtfulBgColor(context),
+          AppTheme.getDoubtfulBorderColor(context),
         ),
         const SizedBox(width: 8),
         _buildSummaryChip(
           context,
           '${result.halalIngredients.length}',
           'result.halal_label'.tr(),
-          AppTheme.halalGreen,
+          AppTheme.getHalalTextColor(context),
+          AppTheme.getHalalBgColor(context),
+          AppTheme.getHalalBorderColor(context),
         ),
       ],
     );
@@ -538,15 +828,17 @@ class ResultScreen extends StatelessWidget {
     BuildContext context,
     String count,
     String label,
-    Color color,
+    Color textColor,
+    Color bgColor,
+    Color borderColor,
   ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: bgColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           children: [
@@ -554,7 +846,7 @@ class ResultScreen extends StatelessWidget {
               count,
               style: AppFonts.primary(
                 context,
-                color: color,
+                color: textColor,
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
               ),
@@ -564,9 +856,9 @@ class ResultScreen extends StatelessWidget {
               label,
               style: AppFonts.secondary(
                 context,
-                color: color.withValues(alpha: 0.8),
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
+                color: textColor,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
               ),
             ),

@@ -28,7 +28,7 @@ class _BannedScreenState extends State<BannedScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Your account restriction has been lifted!',
+            'auth.restriction_lifted'.tr(),
             style: AppFonts.primary(context, color: Colors.white),
           ),
           backgroundColor: Colors.green.shade600,
@@ -41,7 +41,7 @@ class _BannedScreenState extends State<BannedScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Account is still suspended. Please contact support.',
+            'auth.still_suspended'.tr(),
             style: AppFonts.primary(context, color: Colors.white),
           ),
           backgroundColor: Colors.red.shade700,
@@ -238,7 +238,7 @@ class _BannedScreenState extends State<BannedScreen> {
                             )
                           : const Icon(Icons.refresh_rounded, size: 20),
                       label: Text(
-                        _isChecking ? 'Checking...' : 'auth.recheck_status'.tr(),
+                        _isChecking ? 'auth.checking'.tr() : 'auth.recheck_status'.tr(),
                         style: AppFonts.primary(
                           context,
                           fontSize: 15,

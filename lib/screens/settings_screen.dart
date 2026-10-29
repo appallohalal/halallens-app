@@ -11,6 +11,10 @@ import '../utils/language_helper.dart';
 import '../services/theme_service.dart';
 import '../services/auth_service.dart';
 import 'auth_screen.dart';
+import 'edit_profile_screen.dart';
+import '../config/cms_config.dart';
+import '../widgets/support_dialog.dart';
+import 'support_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,6 +25,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    CmsConfig.syncFromBackend();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,8 +61,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('Account & Profile'),
+              _buildSectionTitle('settings.sections.account'.tr()),
               _buildAccountTile(context),
+              _buildSupportBanner(context),
               const SizedBox(height: 16),
               _buildSectionTitle('settings.sections.features'.tr()),
               _buildSettingsTile(
@@ -108,13 +119,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSectionTitle('settings.sections.about'.tr()),
               _buildSettingsTile(
                 icon: IconlyLight.message,
-                title: 'settings.help_title'.tr(),
+                title: CmsConfig.getText('helpTitle', fallback: 'settings.help_title'.tr()),
                 subtitle: 'settings.help_desc'.tr(),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => StaticPageScreen(
+                        pageKey: 'help',
                         title: 'settings.help_title'.tr(),
                         content: 'settings.help_content'.tr(),
                         icon: IconlyLight.message,
@@ -125,13 +137,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               _buildSettingsTile(
                 icon: IconlyLight.shield_done,
-                title: 'settings.privacy_title'.tr(),
+                title: CmsConfig.getText('privacyTitle', fallback: 'settings.privacy_title'.tr()),
                 subtitle: 'settings.privacy_desc'.tr(),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => StaticPageScreen(
+                        pageKey: 'privacy',
                         title: 'settings.privacy_title'.tr(),
                         content: 'settings.privacy_content'.tr(),
                         icon: IconlyLight.shield_done,
@@ -141,14 +154,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
               _buildSettingsTile(
+                icon: IconlyLight.document,
+                title: CmsConfig.getText('termsTitle', fallback: 'auth.terms_title'.tr()),
+                subtitle: 'auth.terms_title'.tr(),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StaticPageScreen(
+                        pageKey: 'terms',
+                        title: 'auth.terms_title'.tr(),
+                        content: 'auth.terms_content'.tr(),
+                        icon: IconlyLight.document,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsTile(
                 icon: IconlyLight.info_square,
-                title: 'settings.about_title'.tr(),
+                title: CmsConfig.getText('aboutTitle', fallback: 'settings.about_title'.tr()),
                 subtitle: 'settings.about_desc'.tr(),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => StaticPageScreen(
+                        pageKey: 'about',
                         title: 'settings.about_title'.tr(),
                         content: 'settings.about_content'.tr(),
                         icon: IconlyLight.info_square,
@@ -167,14 +199,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String _getThemeName(BuildContext context) {
     final themeService = Provider.of<ThemeService>(context);
-    switch (themeService.themeMode) {
-      case ThemeMode.system:
-        return 'general.system_default'.tr();
-      case ThemeMode.light:
-        return 'general.light'.tr();
-      case ThemeMode.dark:
-        return 'general.dark'.tr();
-    }
+    return (themeService.themeMode == ThemeMode.dark)
+        ? 'general.dark'.tr()
+        : 'general.light'.tr();
   }
 
   void _showThemePicker(BuildContext context) {
@@ -232,14 +259,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _themeOption(
-                    context,
-                    themeService,
-                    ThemeMode.system,
-                    'general.system_default'.tr(),
-                    IconlyLight.setting,
-                  ),
-                  const SizedBox(height: 10),
                   _themeOption(
                     context,
                     themeService,
@@ -363,14 +382,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    Color? iconColor,
+    Widget? trailing,
   }) {
-    return Container(
+    return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.getCardColor(context),
+      elevation: 0,
+      color: AppTheme.getCardColor(context),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.getBorderColor(context), width: 1),
+        side: BorderSide(color: AppTheme.getBorderColor(context), width: 1),
       ),
+      clipBehavior: Clip.antiAlias,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         leading: Container(
@@ -379,7 +402,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: AppTheme.getBackgroundColor(context),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: AppTheme.primaryBlue, size: 22),
+          child: Icon(icon, color: iconColor ?? AppTheme.primaryBlue, size: 22),
         ),
         title: Text(
           title,
@@ -402,12 +425,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ),
-        trailing: Icon(
-          IconlyLight.arrow_right_2,
-          color: AppTheme.getTextMuted(context),
-          size: 20,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        trailing: trailing ??
+            Icon(
+              IconlyLight.arrow_right_2,
+              color: AppTheme.getTextMuted(context),
+              size: 20,
+            ),
         onTap: onTap,
       ),
     );
@@ -460,8 +483,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             isLoggedIn
                                 ? (user?.name.isNotEmpty == true
                                     ? user!.name
-                                    : (user?.username ?? 'User'))
-                                : 'Guest Account',
+                                    : (user?.username ?? 'settings.user_default'.tr()))
+                                : 'settings.guest_account'.tr(),
                             style: AppFonts.primary(
                               context,
                               color: AppTheme.getTextPrimary(context),
@@ -473,7 +496,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             isLoggedIn
                                 ? '${user?.email ?? ''}${user?.city.isNotEmpty == true ? ' • ${user!.city}, ${user.country}' : ''}'
-                                : 'Sign in to sync your data',
+                                : 'settings.guest_subtitle'.tr(),
                             style: AppFonts.primary(
                               context,
                               color: AppTheme.getTextSecondary(context),
@@ -486,7 +509,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     if (isLoggedIn)
                       IconButton(
-                        tooltip: 'Sign Out',
+                        tooltip: 'settings.sign_out'.tr(),
                         icon: const Icon(
                           IconlyLight.logout,
                           color: Colors.redAccent,
@@ -496,6 +519,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                   ],
                 ),
+                if (isLoggedIn) ...[
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(IconlyLight.edit, size: 15),
+                          label: Text(
+                            'settings.edit_profile'.tr(),
+                            style: AppFonts.primary(
+                              context,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.primaryBlue,
+                            side: BorderSide(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.35),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 9,
+                              horizontal: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EditProfileScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(
+                            IconlyLight.delete,
+                            size: 15,
+                            color: Colors.redAccent,
+                          ),
+                          label: Text(
+                            'settings.delete_account'.tr(),
+                            style: AppFonts.primary(
+                              context,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.redAccent,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.redAccent,
+                            side: BorderSide(
+                              color: Colors.redAccent.withValues(alpha: 0.35),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 9,
+                              horizontal: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () => _confirmDeleteAccount(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 if (!isLoggedIn) ...[
                   const SizedBox(height: 12),
                   SizedBox(
@@ -503,7 +604,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: ElevatedButton.icon(
                       icon: const Icon(IconlyLight.login, size: 18),
                       label: Text(
-                        'Sign In / Register',
+                        'settings.sign_in_register'.tr(),
                         style: AppFonts.primary(
                           context,
                           fontSize: 14,
@@ -538,6 +639,198 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildSupportBanner(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+
+    // Eye-catching, spacious hero block with Warm Amber, Gold and Warm Green accents
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.08 : 0.12),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.5 : 0.35),
+            width: 1.4,
+          ),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF261D0F), const Color(0xFF13251A)]
+                  : [const Color(0xFFFFFBEB), const Color(0xFFF0FDF4)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: InkWell(
+            onTap: () {
+              SupportDialog.show(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      // Radiant Gold & Amber Gradient Icon Box (Spacious 52x52)
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            IconlyBold.heart,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    'settings.support_project_title'.tr(),
+                                    style: AppFonts.primary(
+                                      context,
+                                      color: AppTheme.getTextPrimary(context),
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.25 : 0.16),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    '★ Prix libre',
+                                    style: TextStyle(
+                                      color: Color(0xFFD97706),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'settings.support_project_subtitle'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.22 : 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            IconlyLight.arrow_right_2,
+                            color: Color(0xFFD97706),
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // Bottom Highlights Pill Row giving grand height and visual richness
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF088839).withValues(alpha: isDark ? 0.2 : 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF088839).withValues(alpha: 0.3),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(IconlyBold.shield_done, color: Color(0xFF088839), size: 13),
+                            const SizedBox(width: 5),
+                            Text(
+                              'support.no_commitment'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: const Color(0xFF088839),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _confirmSignOut(BuildContext context) {
     showDialog(
       context: context,
@@ -545,7 +838,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppTheme.getCardColor(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Sign Out',
+          'settings.sign_out'.tr(),
           style: AppFonts.primary(
             context,
             color: AppTheme.getTextPrimary(context),
@@ -553,7 +846,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         content: Text(
-          'Are you sure you want to sign out of your HalalLens account?',
+          'settings.sign_out_confirm'.tr(),
           style: AppFonts.primary(
             context,
             color: AppTheme.getTextSecondary(context),
@@ -562,7 +855,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: AppFonts.primary(context)),
+            child: Text('general.cancel'.tr(), style: AppFonts.primary(context)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -573,9 +866,113 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(ctx);
               await AuthService.instance.logout();
             },
-            child: Text('Sign Out', style: AppFonts.primary(context)),
+            child: Text('settings.sign_out'.tr(), style: AppFonts.primary(context)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
+    bool isDeleting = false;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.getCardColor(context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3)),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(IconlyBold.delete, color: Colors.redAccent, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'settings.delete_account'.tr(),
+                  style: AppFonts.primary(
+                    context,
+                    color: Colors.redAccent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'settings.delete_account_confirm'.tr(),
+            style: AppFonts.primary(
+              context,
+              color: AppTheme.getTextSecondary(context),
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.pop(ctx),
+              child: Text(
+                'general.cancel'.tr(),
+                style: AppFonts.primary(
+                  context,
+                  color: AppTheme.getTextSecondary(context),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      setDialogState(() => isDeleting = true);
+                      try {
+                        final res = await AuthService.instance.deleteAccount();
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                res.message ?? 'settings.delete_account_success'.tr(),
+                                style: AppFonts.primary(context, color: Colors.white),
+                              ),
+                              backgroundColor: Colors.redAccent,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isDeleting = false);
+                      }
+                    },
+              child: isDeleting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(
+                      'settings.delete_account_btn'.tr(),
+                      style: AppFonts.primary(context, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

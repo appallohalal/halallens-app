@@ -6,7 +6,7 @@
     "coming_soon": "Em breve",
     "coming_soon_desc": "Esta funcionalidade estará disponível em breve!",
     "default_text": "Padrão",
-    "app_name": "Halal Lens",
+    "app_name": "Allo Halal",
     "unknown_product": "Produto Desconhecido",
     "scanned_image": "Imagem Escaneada",
     "scanned_ingredients": "Ingredientes Escaneados",
@@ -17,7 +17,11 @@
     "unknown": "Desconhecido",
     "system_default": "Padrão do sistema",
     "light": "Modo claro",
-    "dark": "Modo escuro"
+    "dark": "Modo escuro",
+    "featured_partner": "PARCEIRO EM DESTAQUE",
+    "visit": "Visitar",
+    "distance_m": "a {} m",
+    "distance_km": "a {} km"
   },
   "home": {
     "hero_subtitle": "Escaneie o código de barras ou rótulo de qualquer produto para verificar o status Halal instantaneamente.",
@@ -39,7 +43,8 @@
     "manual_entry_hint": "ex: 3017620422003",
     "search_product": "Pesquisar Produto",
     "auto_scan": "A digitalização começará automaticamente",
-    "powered_by": "Desenvolvido por"
+    "powered_by": "Desenvolvido por",
+    "geo_ads_notice_text": "Ofertas e promoções Halal perto de você"
   },
   "text_scan": {
     "title": "Análise de Texto",
@@ -69,7 +74,13 @@
     "not_found": "Produto não encontrado",
     "detailed_breakdown": "Detalhamento de Ingredientes",
     "barcode_prefix": "Código: ",
-    "no_reason": "Nenhum detalhe disponível."
+    "no_reason": "Nenhum detalhe disponível.",
+    "fallback_title": "Produto não listado",
+    "fallback_desc": "Este produto ainda não está na base de dados. Use a IA para analisar os ingredientes:",
+    "scan_label_ai": "Escanear rótulo de ingredientes (IA)",
+    "scan_label_ai_desc": "Tire uma foto da lista de ingredientes",
+    "manual_input_ingredients": "Digitar ingredientes manualmente",
+    "manual_input_ingredients_desc": "Digite ou cole o texto da embalagem"
   },
   "history": {
     "title": "Histórico de Escaneamento",
@@ -90,7 +101,8 @@
     "sections": {
       "features": "RECURSOS",
       "preferences": "PREFERÊNCIAS",
-      "about": "SOBRE"
+      "about": "SOBRE",
+      "account": "CONTA E PERFIL"
     },
     "history_title": "Histórico",
     "history_desc": "Ver produtos escaneados anteriormente",
@@ -98,8 +110,8 @@
     "saved_desc": "Acesso rápido aos seus itens favoritos",
     "language_title": "Idioma",
     "theme_title": "Tema",
-    "theme_desc": "Escolha modo sistema, claro ou escuro.",
-    "about_title": "Sobre o HalalLens",
+    "theme_desc": "Escolha entre o modo claro ou escuro.",
+    "about_title": "Sobre o Allo Halal",
     "about_desc": "Versão 1.0.0",
     "help_title": "Ajuda e Suporte",
     "help_desc": "Contate-nos para qualquer dúvida",
@@ -108,9 +120,24 @@
     "select_lang_title": "Selecionar Idioma",
     "select_lang_desc": "Escolha o idioma preferido para a interface.",
     "lang_saved": "Idioma salvo",
-    "about_content": "HalalLens é um assistente de verificação Halal de última geração, movido a IA, projetado para consumidores muçulmanos modernos. Numa era de cadeias de abastecimento alimentar globais complexas, identificar produtos verdadeiramente halal pode ser um desafio. A nossa app combina inteligência artificial avançada com uma base de dados global massiva para simplificar este processo.\n\nCaracterísticas principais:\n• Análise IA avançada: Utilizamos os mais recentes modelos Llama 3 Vision e Text da Groq AI para analisar ingredientes em tempo real.\n• Base de dados global: Acesso a dados de mais de 3 milhões de produtos em todo o mundo através do Open Food Facts.\n• Suporte multilingue: Alternância fluida entre 14 idiomas principais.\n• Visão OCR: Sem código de barras? Tire uma foto da lista de ingredientes e a nossa IA traduzirá e analisará instantaneamente.\n• Velocidade: Resultados em milissegundos graças à infraestrutura de IA de alto desempenho da Groq.\n\nA nossa missão é empoderar muçulmanos em todo o mundo com transparência, tornando as compras halal mais rápidas, seguras e 100% confiáveis.",
-    "help_content": "Precisa de ajuda ou tem sugestões? A equipa HalalLens está empenhada em dar-lhe a melhor experiência.\n\nTópicos de suporte comuns:\n• Reportar resultados incorretos: A IA por vezes pode errar. Se vir um estado errado num produto, envie-nos o código de barras por email.\n• Produto não encontrado: Se o produto não estiver na base de dados, use a função 'Escanear ingredientes' para analisar o rótulo manualmente.\n• Questões técnicas: Se a app estiver lenta, verifique a sua ligação à internet; as funcionalidades de IA requerem processamento na nuvem.\n\nContacte-nos:\n• Email: support@halallens.com\n• Site: www.halallens.com\n• FAQ: Centro de ajuda em halallens.com/faq\n\nRespondemos normalmente em 24–48 horas. O seu feedback ajuda-nos a melhorar o HalalLens para todos!",
-    "privacy_content": "Na HalalLens acreditamos que a sua privacidade é um direito. Concebemos esta app com uma arquitetura 'Privacidade em primeiro lugar'.\n\nPilares da privacidade:\n1. Zero rastreio pessoal: Não exigimos registo de conta. Não recolhemos nome, email ou localização.\n2. Dados locais: O histórico de digitalizações e produtos guardados ficam apenas no seu dispositivo. Não conseguimos ver o que digitaliza.\n3. IA segura: As imagens enviadas para análise são processadas através de APIs privadas. Nenhum dado é armazenado permanentemente.\n4. Permissões mínimas: Só precisamos de acesso à câmara para digitalizar. Não acedemos aos seus contactos nem a outros ficheiros pessoais.\n\nA sua confiança é o nosso maior património."
+    "about_content": "Allo Halal é um assistente de verificação Halal de última geração, movido a IA, projetado para consumidores muçulmanos modernos. Numa era de cadeias de abastecimento alimentar globais complexas, identificar produtos verdadeiramente halal pode ser um desafio. A nossa app combina inteligência artificial avançada com uma base de dados global massiva para simplificar este processo.\n\nCaracterísticas principais:\n• Análise IA avançada: Utilizamos os mais recentes modelos Llama 3 Vision e Text da Groq AI para analisar ingredientes em tempo real.\n• Base de dados global: Acesso a dados de mais de 3 milhões de produtos em todo o mundo através do Open Food Facts.\n• Suporte multilingue: Alternância fluida entre 14 idiomas principais.\n• Visão OCR: Sem código de barras? Tire uma foto da lista de ingredientes e a nossa IA traduzirá e analisará instantaneamente.\n• Velocidade: Resultados em milissegundos graças à infraestrutura de IA de alto desempenho da Groq.\n\nA nossa missão é empoderar muçulmanos em todo o mundo com transparência, tornando as compras halal mais rápidas, seguras e 100% confiáveis.",
+    "help_content": "Precisa de ajuda ou tem sugestões? A equipa Allo Halal está empenhada em dar-lhe a melhor experiência.\n\nTópicos de suporte comuns:\n• Reportar resultados incorretos: A IA por vezes pode errar. Se vir um estado errado num produto, envie-nos o código de barras por email.\n• Produto não encontrado: Se o produto não estiver na base de dados, use a função 'Escanear ingredientes' para analisar o rótulo manualmente.\n• Questões técnicas: Se a app estiver lenta, verifique a sua ligação à internet; as funcionalidades de IA requerem processamento na nuvem.\n\nContacte-nos:\n• Email: support@allohalal.fr\n• Site: www.allohalal.fr\n• FAQ: Centro de ajuda em allohalal.fr/faq\n\nRespondemos normalmente em 24–48 horas. O seu feedback ajuda-nos a melhorar o Allo Halal para todos!",
+    "privacy_content": "Na Allo Halal acreditamos que a sua privacidade é um direito. Concebemos esta app com uma arquitetura 'Privacidade em primeiro lugar'.\n\nPilares da privacidade:\n1. Zero rastreio pessoal: Não exigimos registo de conta. Não recolhemos nome, email ou localização.\n2. Dados locais: O histórico de digitalizações e produtos guardados ficam apenas no seu dispositivo. Não conseguimos ver o que digitaliza.\n3. IA segura: As imagens enviadas para análise são processadas através de APIs privadas. Nenhum dado é armazenado permanentemente.\n4. Permissões mínimas: Só precisamos de acesso à câmara para digitalizar. Não acedemos aos seus contactos nem a outros ficheiros pessoais.\n\nA sua confiança é o nosso maior património.",
+    "guest_account": "Conta de convidado",
+    "guest_subtitle": "Inicie sessão para sincronizar os seus dados",
+    "user_default": "Utilizador",
+    "sign_in_register": "Entrar / Registar",
+    "sign_out": "Terminar sessão",
+    "sign_out_confirm": "Tem a certeza de que pretende terminar sessão na sua conta Allo Halal?",
+    "edit_profile": "Editar perfil",
+    "edit_profile_desc": "Atualizar nome, email e localização",
+    "delete_account": "Excluir conta",
+    "delete_account_desc": "Direito ao esquecimento (RGPD Art. 17)",
+    "delete_account_confirm": "Tem certeza de que deseja excluir permanentemente sua conta e todos os dados pessoais? Esta ação é irreversível (RGPD Art. 17).",
+    "delete_account_btn": "Excluir permanentemente",
+    "delete_account_success": "Sua conta e dados pessoais foram excluídos permanentemente.",
+    "support_project_title": "Apoiar o projeto (Preço livre)",
+    "support_project_subtitle": "Contribuição livre e sem fidelização"
   },
   "connection": {
     "no_internet_msg": "Sem conexão com a internet.",
@@ -171,7 +198,7 @@
     "city_hint": "ex. Lisboa, São Paulo",
     "city_required": "Por favor, indique a sua cidade",
     "sign_in": "Entrar",
-    "new_to_app": "Novo no HalalLens?",
+    "new_to_app": "Novo no Allo Halal?",
     "create_account": "Criar conta",
     "create_account_btn": "Criar conta gratuita",
     "already_have_account": "Já tem uma conta?",
@@ -187,6 +214,29 @@
     "suspension_reason": "Motivo da Suspensão",
     "default_ban_reason": "Violação das diretrizes da comunidade ou termos de serviço",
     "recheck_status": "Verificar status novamente",
-    "logout_or_switch": "Sair / Mudar de conta"
+    "logout_or_switch": "Sair / Mudar de conta",
+    "terms_content": "Bienvenue sur Allo Halal. En créant un compte, vous acceptez les présentes Conditions d'utilisation.\n\n1. Objectif et vérification :\nAllo Halal aide les consommateurs à analyser les ingrédients des produits et à identifier les additifs halal, haram ou douteux. Bien que notre base de données et nos modèles d'IA soient continuellement mis à jour, les consommateurs doivent vérifier auprès des organismes de certification halal agréés en cas de doute.\n\n2. Responsabilité du compte :\nVous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les actions effectuées sous votre compte.\n\n3. Intégrité de la communauté :\nLes utilisateurs s'engagent à utiliser le service de manière appropriée et honnête.\n\nMerci de faire partie de la communauté Allo Halal.",
+    "and": "e",
+    "register_success": "Conta criada! Foi enviado um e-mail de boas-vindas.",
+    "checking": "A verificar...",
+    "restriction_lifted": "A restrição da sua conta foi levantada!",
+    "still_suspended": "A conta continua suspensa. Contacte o suporte."
+  },
+  "location": {
+    "services_disabled_title": "Localização desativada",
+    "services_disabled_desc": "Ative o GPS para descobrir ofertas e restaurantes Halal próximos.",
+    "enable_btn": "Ativar"
+  },
+  "support": {
+    "title": "Modelo de Preço Livre",
+    "desc": "Allo Halal não cobra assinaturas. Escolha livremente apoiar os custos dos servidores IA e o desenvolvimento.",
+    "no_commitment": "Sem assinatura • Livre • Sem compromisso",
+    "slider_label": "Valor da sua contribuição:",
+    "btn_contribute": "Apoiar com {} €",
+    "thank_you": "Muito obrigado pelo seu apoio!",
+    "tier_coffee": "☕ Pague um café para a equipe",
+    "tier_server": "🌱 Ajude nos custos dos servidores IA",
+    "tier_growth": "🌟 Acelere o desenvolvimento de recursos",
+    "tier_patron": "👑 Torne-se um Patrono oficial"
   }
 }

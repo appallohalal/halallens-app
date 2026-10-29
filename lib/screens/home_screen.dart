@@ -13,6 +13,8 @@ import 'auth_screen.dart';
 import 'banned_screen.dart';
 import '../config/auth_config.dart';
 import '../services/auth_service.dart';
+import '../services/geo_ad_service.dart';
+import '../widgets/geo_ad_banner_widget.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_fonts.dart';
 
@@ -31,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<ScannerProvider>().initialize();
       AdService.instance.preloadInterstitial();
       AuthService.instance.checkBanStatus();
+      GeoAdService.instance.refreshNearbyAds();
     });
   }
 
@@ -148,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(width: 6),
                                           Text(
-                                            'Sign In',
+                                            'auth.sign_in'.tr(),
                                             style: AppFonts.primary(
                                               context,
                                               fontSize: 13,
@@ -197,16 +200,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           children: [
                             Container(
-                              width: 90,
-                              height: 90,
+                              width: 96,
+                              height: 96,
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryBlue,
                                 borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryBlue.withValues(
+                                      alpha: 0.25,
+                                    ),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                               ),
-                              child: const Icon(
-                                IconlyBold.shield_done,
-                                size: 48,
-                                color: Colors.white,
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.asset(
+                                'assets/app_logo.png',
+                                fit: BoxFit.cover,
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -262,6 +274,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
+                        const GeoAdBannerWidget(
+                          margin: EdgeInsets.only(bottom: 20),
+                        ),
                         Column(
                           children: [
                             SizedBox(
@@ -346,35 +361,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'home.powered_by'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: AppTheme.getTextSecondary(
-                                  context,
-                                ).withValues(alpha: 0.7),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'general.groq_ai'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.getTextPrimary(context),
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ],
-                        ),
                         const SizedBox(height: 16),
                       ],
                     ),
@@ -434,10 +420,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-          ),
-          Icon(
-            IconlyLight.arrow_right_2,
-            color: AppTheme.getTextMuted(context),
           ),
         ],
       ),

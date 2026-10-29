@@ -36,12 +36,17 @@ class HalalResult {
   final List<String> doubtfulIngredients;
   final List<String> halalIngredients;
 
+  /// True when no official ingredient list was available and the verdict was
+  /// estimated by the AI from the product identity (name, brand, category).
+  final bool isEstimated;
+
   const HalalResult({
     required this.overallStatus,
     required this.ingredientResults,
     required this.haramIngredients,
     required this.doubtfulIngredients,
     required this.halalIngredients,
+    this.isEstimated = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -50,6 +55,7 @@ class HalalResult {
     'haramIngredients': haramIngredients,
     'doubtfulIngredients': doubtfulIngredients,
     'halalIngredients': halalIngredients,
+    'isEstimated': isEstimated,
   };
 
   factory HalalResult.fromJson(Map<String, dynamic> json) {
@@ -66,6 +72,7 @@ class HalalResult {
       haramIngredients: List<String>.from(json['haramIngredients'] ?? []),
       doubtfulIngredients: List<String>.from(json['doubtfulIngredients'] ?? []),
       halalIngredients: List<String>.from(json['halalIngredients'] ?? []),
+      isEstimated: json['isEstimated'] == true || json['is_estimated'] == true,
     );
   }
 }

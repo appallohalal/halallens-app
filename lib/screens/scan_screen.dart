@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:iconly/iconly.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../providers/scanner_provider.dart';
+import '../services/geo_ad_service.dart';
 import '../utils/language_helper.dart';
 import '../theme/app_theme.dart';
 import 'result_screen.dart';
@@ -38,6 +39,9 @@ class _ScanScreenState extends State<ScanScreen>
     _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      GeoAdService.instance.refreshNearbyAds();
+    });
   }
 
   @override

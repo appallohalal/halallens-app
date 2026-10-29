@@ -6,7 +6,7 @@
     "coming_soon": "Yakında",
     "coming_soon_desc": "Bu özellik yakında gelecek!",
     "default_text": "Varsayılan",
-    "app_name": "Helal Mercek",
+    "app_name": "Allo Halal",
     "unknown_product": "Bilinmeyen Ürün",
     "scanned_image": "Tarama Resmi",
     "scanned_ingredients": "Taranan İçerikler",
@@ -17,7 +17,11 @@
     "unknown": "Bilinmiyor",
     "system_default": "Sistem Varsayılanı",
     "light": "Açık Mod",
-    "dark": "Karanlık Mod"
+    "dark": "Karanlık Mod",
+    "featured_partner": "ÖNE ÇIKAN ORTAK",
+    "visit": "Ziyaret Et",
+    "distance_m": "{} m uzakta",
+    "distance_km": "{} km uzakta"
   },
   "home": {
     "hero_subtitle": "Herhangi bir ürün barkodunu veya içeriğini\ntarayarak helal durumunu anında kontrol edin.",
@@ -39,7 +43,8 @@
     "manual_entry_hint": "ör. 3017620422003",
     "search_product": "Ürün Ara",
     "auto_scan": "Tarama otomatik olarak başlayacaktır",
-    "powered_by": "Destekleyen"
+    "powered_by": "Destekleyen",
+    "geo_ads_notice_text": "Yakınınızdaki Helal fırsatlar ve kampanyalar"
   },
   "text_scan": {
     "title": "Metin Analizi",
@@ -69,7 +74,13 @@
     "not_found": "Ürün Bulunamadı",
     "detailed_breakdown": "Detaylı İçerik Analizi",
     "barcode_prefix": "Barkod: ",
-    "no_reason": "Detaylı bilgi mevcut değil."
+    "no_reason": "Detaylı bilgi mevcut değil.",
+    "fallback_title": "Listelenmemiş Ürün",
+    "fallback_desc": "Bu ürün henüz veritabanında yok. İçerikleri doğrudan analiz etmek için Yapay Zekayı kullanın:",
+    "scan_label_ai": "İçerik Etiketini Tara (Görsel YZ)",
+    "scan_label_ai_desc": "Paket üzerindeki içerik listesinin fotoğrafını çekin",
+    "manual_input_ingredients": "İçerikleri Elle Girin",
+    "manual_input_ingredients_desc": "Ambalaj üzerindeki metni yazın veya yapıştırın"
   },
   "history": {
     "title": "Tarama Geçmişi",
@@ -90,7 +101,8 @@
     "sections": {
       "features": "ÖZELLİKLER",
       "preferences": "TERCİHLER",
-      "about": "HAKKINDA"
+      "about": "HAKKINDA",
+      "account": "HESAP VE PROFİL"
     },
     "history_title": "Tarama Geçmişi",
     "history_desc": "Önceden taradığınız ürünleri görün",
@@ -98,7 +110,7 @@
     "saved_desc": "Favori ürünlerinize hızlı erişim",
     "language_title": "Dil",
     "theme_title": "Tema",
-    "theme_desc": "Sistem, açık veya koyu mod seçin.",
+    "theme_desc": "Açık veya koyu mod arasında seçim yapın.",
     "about_title": "Hakkında",
     "about_desc": "Sürüm 1.0.0",
     "help_title": "Yardım",
@@ -108,9 +120,24 @@
     "select_lang_title": "Dil Seçin",
     "select_lang_desc": "Uygulama arayüzü için tercih ettiğiniz dili seçin.",
     "lang_saved": "Dil tercihi kaydedildi",
-    "about_content": "HalalLens, modern Müslüman tüketiciler için tasarlanmış yapay zeka destekli yeni nesil bir Helal doğrulama asistanıdır. Karmaşık küresel gıda tedarik zincirleri çağında gerçekten helal ürünleri tespit etmek zor olabilir. Uygulamamız bu süreci kolaylaştırmak için gelişmiş yapay zekayı büyük bir küresel veritabanıyla birleştirir.\n\nTemel Özellikler:\n• Gelişmiş Yapay Zeka Analizi: İçerikleri gerçek zamanlı analiz etmek için Groq AI'ın en son Llama 3 Vision ve Text modellerini kullanıyoruz.\n• Küresel Veritabanı: Open Food Facts üzerinden dünya çapında 3 milyondan fazla ürün verisine erişim.\n• Çoklu Dil Desteği: 14 ana dil arasında sorunsuz geçiş.\n• Vision OCR: Barkod yok mu? İçerik listesinin fotoğrafını çekin, yapay zekamız anında çevirip analiz etsin.\n• Hız: Groq'un yüksek performanslı yapay zeka altyapısı sayesinde milisaniyeler içinde sonuç.\n\nMisyonumuz, helal alışverişi daha hızlı, güvenli ve %100 güvenilir kılarak dünya çapındaki Müslümanları şeffaflıkla güçlendirmektir.",
-    "help_content": "Yardıma mı ihtiyacınız var yoksa önerileriniz mi var? HalalLens ekibi size en iyi deneyimi sunmaya kendini adamıştır.\n\nYaygın Destek Konuları:\n• Yanlış sonuç bildirimi: Yapay zeka bazen hata yapabilir. Bir ürünün durumu yanlış görünüyorsa lütfen barkodu e-posta ile gönderin.\n• Ürün bulunamadı: Ürün veritabanında yoksa 'İçerik Tarama' özelliğiyle etiketi manuel analiz edebilirsiniz.\n• Teknik sorunlar: Uygulama yavaşsa internet bağlantınızı kontrol edin; yapay zeka özellikleri bulut işleme gerektirir.\n\nBize Ulaşın:\n• E-posta: support@halallens.com\n• Web: www.halallens.com\n• SSS: Yardım merkezimiz halallens.com/faq\n\nE-postalara genelde 24–48 saat içinde yanıt veriyoruz. Geri bildiriminiz HalalLens'i herkes için geliştirmemize yardım eder!",
-    "privacy_content": "HalalLens'te gizliliğinizin hakkınız olduğuna inanıyoruz. Bu uygulamayı 'Önce Gizlilik' mimarisiyle tasarladık.\n\nGizliliğin temel sütunları:\n1. Sıfır kişisel takip: Hesap kaydı gerekmez. Adınızı, e-postanızı veya konumunuzu toplamıyoruz.\n2. Yerel veri: Tarama geçmişiniz ve kayıtlı ürünler yalnızca cihazınızda saklanır. Neyi taradığınızı göremiyoruz.\n3. Güvenli yapay zeka: Analiz için gönderilen görüntüler özel API'ler üzerinden işlenir. Hiçbir veri kalıcı olarak saklanmaz.\n4. Minimum izinler: Yalnızca tarama için kamera erişimi gerekiyor. Kişilerinize veya diğer kişisel dosyalarınıza erişmiyoruz.\n\nGüveniniz bizim en büyük varlığımızdır."
+    "about_content": "Allo Halal, modern Müslüman tüketiciler için tasarlanmış yapay zeka destekli yeni nesil bir Helal doğrulama asistanıdır. Karmaşık küresel gıda tedarik zincirleri çağında gerçekten helal ürünleri tespit etmek zor olabilir. Uygulamamız bu süreci kolaylaştırmak için gelişmiş yapay zekayı büyük bir küresel veritabanıyla birleştirir.\n\nTemel Özellikler:\n• Gelişmiş Yapay Zeka Analizi: İçerikleri gerçek zamanlı analiz etmek için Groq AI'ın en son Llama 3 Vision ve Text modellerini kullanıyoruz.\n• Küresel Veritabanı: Open Food Facts üzerinden dünya çapında 3 milyondan fazla ürün verisine erişim.\n• Çoklu Dil Desteği: 14 ana dil arasında sorunsuz geçiş.\n• Vision OCR: Barkod yok mu? İçerik listesinin fotoğrafını çekin, yapay zekamız anında çevirip analiz etsin.\n• Hız: Groq'un yüksek performanslı yapay zeka altyapısı sayesinde milisaniyeler içinde sonuç.\n\nMisyonumuz, helal alışverişi daha hızlı, güvenli ve %100 güvenilir kılarak dünya çapındaki Müslümanları şeffaflıkla güçlendirmektir.",
+    "help_content": "Yardıma mı ihtiyacınız var yoksa önerileriniz mi var? Allo Halal ekibi size en iyi deneyimi sunmaya kendini adamıştır.\n\nYaygın Destek Konuları:\n• Yanlış sonuç bildirimi: Yapay zeka bazen hata yapabilir. Bir ürünün durumu yanlış görünüyorsa lütfen barkodu e-posta ile gönderin.\n• Ürün bulunamadı: Ürün veritabanında yoksa 'İçerik Tarama' özelliğiyle etiketi manuel analiz edebilirsiniz.\n• Teknik sorunlar: Uygulama yavaşsa internet bağlantınızı kontrol edin; yapay zeka özellikleri bulut işleme gerektirir.\n\nBize Ulaşın:\n• E-posta: support@allohalal.fr\n• Web: www.allohalal.fr\n• SSS: Yardım merkezimiz allohalal.fr/faq\n\nE-postalara genelde 24–48 saat içinde yanıt veriyoruz. Geri bildiriminiz Allo Halal'i herkes için geliştirmemize yardım eder!",
+    "privacy_content": "Allo Halal'te gizliliğinizin hakkınız olduğuna inanıyoruz. Bu uygulamayı 'Önce Gizlilik' mimarisiyle tasarladık.\n\nGizliliğin temel sütunları:\n1. Sıfır kişisel takip: Hesap kaydı gerekmez. Adınızı, e-postanızı veya konumunuzu toplamıyoruz.\n2. Yerel veri: Tarama geçmişiniz ve kayıtlı ürünler yalnızca cihazınızda saklanır. Neyi taradığınızı göremiyoruz.\n3. Güvenli yapay zeka: Analiz için gönderilen görüntüler özel API'ler üzerinden işlenir. Hiçbir veri kalıcı olarak saklanmaz.\n4. Minimum izinler: Yalnızca tarama için kamera erişimi gerekiyor. Kişilerinize veya diğer kişisel dosyalarınıza erişmiyoruz.\n\nGüveniniz bizim en büyük varlığımızdır.",
+    "guest_account": "Misafir Hesabı",
+    "guest_subtitle": "Verilerinizi senkronize etmek için giriş yapın",
+    "user_default": "Kullanıcı",
+    "sign_in_register": "Giriş Yap / Kayıt Ol",
+    "sign_out": "Çıkış Yap",
+    "sign_out_confirm": "Allo Halal hesabınızdan çıkış yapmak istediğinizden emin misiniz?",
+    "edit_profile": "Profili Düzenle",
+    "edit_profile_desc": "Ad, e-posta ve konumunuzu güncelleyin",
+    "delete_account": "Hesabı Sil",
+    "delete_account_desc": "Unutulma hakkı (GDPR Madde 17)",
+    "delete_account_confirm": "Hesabınızı ve tüm kişisel verilerinizi kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz (GDPR Madde 17).",
+    "delete_account_btn": "Kalıcı Olarak Sil",
+    "delete_account_success": "Hesabınız ve kişisel verileriniz kalıcı olarak silindi.",
+    "support_project_title": "Projeyi Destekleyin (Gönüllü)",
+    "support_project_subtitle": "Taahhütsüz serbest katkı"
   },
   "connection": {
     "no_internet_msg": "Hala internet bağlantısı yok.",
@@ -171,7 +198,7 @@
     "city_hint": "örn. İstanbul, Ankara",
     "city_required": "Lütfen şehrinizi belirtin",
     "sign_in": "Giriş Yap",
-    "new_to_app": "HalalLens'te yeni misiniz?",
+    "new_to_app": "Allo Halal'te yeni misiniz?",
     "create_account": "Hesap Oluştur",
     "create_account_btn": "Ücretsiz Hesap Oluştur",
     "already_have_account": "Zaten bir hesabınız var mı?",
@@ -187,6 +214,29 @@
     "suspension_reason": "Askıya Alma Sebebi",
     "default_ban_reason": "Topluluk Kurallarının veya Hizmet Şartlarının İhlali",
     "recheck_status": "Durumu Yeniden Kontrol Et",
-    "logout_or_switch": "Çıkış Yap / Hesap Değiştir"
+    "logout_or_switch": "Çıkış Yap / Hesap Değiştir",
+    "terms_content": "Bienvenue sur Allo Halal. En créant un compte, vous acceptez les présentes Conditions d'utilisation.\n\n1. Objectif et vérification :\nAllo Halal aide les consommateurs à analyser les ingrédients des produits et à identifier les additifs halal, haram ou douteux. Bien que notre base de données et nos modèles d'IA soient continuellement mis à jour, les consommateurs doivent vérifier auprès des organismes de certification halal agréés en cas de doute.\n\n2. Responsabilité du compte :\nVous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les actions effectuées sous votre compte.\n\n3. Intégrité de la communauté :\nLes utilisateurs s'engagent à utiliser le service de manière appropriée et honnête.\n\nMerci de faire partie de la communauté Allo Halal.",
+    "and": "ve",
+    "register_success": "Hesap oluşturuldu! Hoş geldiniz e-postası gönderildi.",
+    "checking": "Kontrol ediliyor...",
+    "restriction_lifted": "Hesap kısıtlamanız kaldırıldı!",
+    "still_suspended": "Hesap hala askıda. Lütfen destek ile iletişime geçin."
+  },
+  "location": {
+    "services_disabled_title": "Konum Kapalı",
+    "services_disabled_desc": "Yakındaki Helal fırsatları ve restoranları keşfetmek için GPS'i açın.",
+    "enable_btn": "Etkinleştir"
+  },
+  "support": {
+    "title": "Gönüllü Katkı Modeli (Prix Libre)",
+    "desc": "Allo Halal zorunlu abonelikleri reddeder. Yapay zeka sunucu maliyetlerini karşılamak için dilediğinizce katkıda bulunun.",
+    "no_commitment": "Abonelik yok • Serbest • Taahhütsüz",
+    "slider_label": "Katkı miktarınız:",
+    "btn_contribute": "{} € ile Destekle",
+    "thank_you": "Topluluğu desteklediğiniz için çok teşekkürler!",
+    "tier_coffee": "☕ Geliştirici ekibe kahve ısmarlayın",
+    "tier_server": "🌱 YZ sunucu maliyetlerine destek olun",
+    "tier_growth": "🌟 Geliştirmeyi ve yeni ürünleri hızlandırın",
+    "tier_patron": "👑 Allo Halal Resmi Destekçisi olun"
   }
 }

@@ -40,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    _countryController.text = 'United States';
+    _countryController.text = 'France';
   }
 
   @override
@@ -59,6 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => StaticPageScreen(
+          pageKey: 'privacy',
           title: 'settings.privacy_title'.tr(),
           content: 'settings.privacy_content'.tr(),
           icon: IconlyLight.shield_done,
@@ -72,13 +73,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => StaticPageScreen(
+          pageKey: 'terms',
           title: 'auth.terms_title'.tr(),
-          content:
-              'Welcome to HalalLens. By creating an account, you agree to these Terms of Service.\n\n'
-              '1. Purpose & Verification:\nHalalLens assists consumers in analyzing product ingredients and identifying halal or haram additives. While our database and AI models are continuously updated, consumers should verify with local halal certification bodies when in doubt.\n\n'
-              '2. Account Responsibility:\nYou are responsible for safeguarding your login credentials and for all actions conducted under your account.\n\n'
-              '3. Community Integrity:\nUsers agree not to exploit the service or submit false reviews.\n\n'
-              'Thank you for being part of the HalalLens community.',
+          content: 'auth.terms_content'.tr(),
           icon: IconlyLight.document,
         ),
       ),
@@ -120,6 +117,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       if (res.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'auth.register_success'.tr(),
+            ),
+            backgroundColor: AppTheme.primaryBlue,
+            duration: const Duration(seconds: 4),
+          ),
+        );
         if (widget.onSuccess != null) {
           widget.onSuccess!();
         } else {
@@ -189,8 +195,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // App Brand Logo
                   Center(
                     child: Container(
-                      width: 72,
-                      height: 72,
+                      width: 76,
+                      height: 76,
                       decoration: BoxDecoration(
                         color: AppTheme.primaryBlue,
                         borderRadius: BorderRadius.circular(20),
@@ -202,10 +208,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        IconlyBold.shield_done,
-                        size: 38,
-                        color: Colors.white,
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.asset(
+                        'assets/app_logo.png',
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
@@ -456,7 +462,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                   ),
                                   TextSpan(
-                                    text: ' & ',
+                                    text: ' ${'auth.and'.tr()} ',
                                     style: AppFonts.primary(
                                       context,
                                       fontSize: 13,

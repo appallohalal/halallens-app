@@ -53,76 +53,49 @@ class GroqConfig {
 
     bool synced = false;
 
-    // 2. Try fetching from Local Admin backend
+    // 2. Primary: Fetch directly from Supabase Cloud REST API for ultra-low latency
     try {
-      final uri = Uri.parse('${AppConfig.backendBaseUrl}/groq');
+      final supabaseUri = Uri.parse(
+        '${AppConfig.supabaseUrl}/rest/v1/groq_settings?id=eq.global&select=*',
+      );
 
-      final response =
-          await http.get(uri).timeout(const Duration(seconds: 3));
+      final response = await http.get(
+        supabaseUri,
+        headers: {
+          'apikey': AppConfig.supabaseAnonKey,
+          'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+        },
+      ).timeout(const Duration(seconds: 2));
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        _applyRemoteConfig(data);
+        final list = jsonDecode(response.body) as List<dynamic>;
+        if (list.isNotEmpty) {
+          final row = list.first as Map<String, dynamic>;
+          _applySupabaseRow(row);
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_prefKeyCachedGroq, response.body);
-        synced = true;
-
-        if (kDebugMode) {
-          debugPrint(
-            '✅ [GroqConfig] Synced from Local Server: '
-            'isEnabled=$isEnabled, '
-            'model=$model, '
-            'visionModel=$visionModel',
-          );
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_prefKeyCachedGroq, jsonEncode(row));
+          synced = true;
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('ℹ️ [GroqConfig] Local server unreachable ($e), trying Supabase cloud...');
-      }
-    }
+    } catch (_) {}
 
-    // 3. Resilient fallback: Try Supabase Cloud directly if local server timed out
+    // 3. Fallback: Admin backend API
     if (!synced) {
       try {
-        final supabaseUri = Uri.parse(
-          '${AppConfig.supabaseUrl}/rest/v1/groq_settings?id=eq.global&select=*',
-        );
-
-        final response = await http.get(
-          supabaseUri,
-          headers: {
-            'apikey': AppConfig.supabaseAnonKey,
-            'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
-          },
-        ).timeout(const Duration(seconds: 4));
+        final uri = Uri.parse('${AppConfig.backendBaseUrl}/groq');
+        final response =
+            await http.get(uri).timeout(const Duration(seconds: 2));
 
         if (response.statusCode == 200) {
-          final list = jsonDecode(response.body) as List<dynamic>;
-          if (list.isNotEmpty) {
-            final row = list.first as Map<String, dynamic>;
-            _applySupabaseRow(row);
+          final data = jsonDecode(response.body) as Map<String, dynamic>;
+          _applyRemoteConfig(data);
 
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(_prefKeyCachedGroq, jsonEncode(row));
-            synced = true;
-
-            if (kDebugMode) {
-              debugPrint(
-                '✅ [GroqConfig] Synced directly from Supabase Cloud: '
-                'isEnabled=$isEnabled, '
-                'model=$model, '
-                'visionModel=$visionModel',
-              );
-            }
-          }
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_prefKeyCachedGroq, response.body);
+          synced = true;
         }
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint('⚠️ [GroqConfig] Supabase cloud sync note: $e');
-        }
-      }
+      } catch (_) {}
     }
   }
 

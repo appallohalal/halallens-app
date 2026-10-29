@@ -5,9 +5,9 @@ import '../theme/app_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  static const Color primaryBlue = Color(0xFF2563EB);
-  static const Color darkBlue = Color(0xFF1D4ED8);
-  static const Color lightBlue = Color(0xFFDBEAFE);
+  static const Color primaryBlue = Color(0xFF088839);
+  static const Color darkBlue = Color(0xFF066D2E);
+  static const Color lightBlue = Color(0xFFE6F4EB);
 
   static const Color backgroundDark = Color(0xFF0D1117);
   static const Color surfaceDark = Color(0xFF161B22);
@@ -18,14 +18,54 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF8B949E);
   static const Color textMuted = Color(0xFF6E7681);
 
-  static const Color haramRed = Color(0xFFFF5252);
-  static const Color doubtfulAmber = Color(0xFFFFAB40);
-  static const Color halalGreen = Color(0xFF69F0AE);
-  static const Color unknownGrey = Color(0xFF78909C);
+  static const Color haramRed = Color(0xFFD32F2F);
+  static const Color doubtfulAmber = Color(0xFFD97706);
+  static const Color halalGreen = Color(0xFF088839);
+  static const Color unknownGrey = Color(0xFF64748B);
 
-  static const Color haramSolid = Color(0xFFD32F2F);
-  static const Color doubtfulSolid = Color(0xFFF57C00);
-  static const Color halalSolid = Color(0xFF2E7D32);
+  static const Color haramSolid = Color(0xFFC62828);
+  static const Color doubtfulSolid = Color(0xFFD97706);
+  static const Color halalSolid = Color(0xFF088839);
+
+  // High-contrast status text/icon colors for Light & Dark modes
+  static Color getHaramTextColor(BuildContext context) =>
+      isDark(context) ? const Color(0xFFF87171) : const Color(0xFFB91C1C);
+
+  static Color getHaramBgColor(BuildContext context) =>
+      isDark(context)
+          ? const Color(0xFFEF4444).withValues(alpha: 0.16)
+          : const Color(0xFFFEE2E2);
+
+  static Color getHaramBorderColor(BuildContext context) =>
+      isDark(context)
+          ? const Color(0xFFF87171).withValues(alpha: 0.4)
+          : const Color(0xFFFCA5A5);
+
+  static Color getDoubtfulTextColor(BuildContext context) =>
+      isDark(context) ? const Color(0xFFFBBF24) : const Color(0xFF92400E);
+
+  static Color getDoubtfulBgColor(BuildContext context) =>
+      isDark(context)
+          ? const Color(0xFFF59E0B).withValues(alpha: 0.18)
+          : const Color(0xFFFEF3C7);
+
+  static Color getDoubtfulBorderColor(BuildContext context) =>
+      isDark(context)
+          ? const Color(0xFFFBBF24).withValues(alpha: 0.45)
+          : const Color(0xFFF59E0B);
+
+  static Color getHalalTextColor(BuildContext context) =>
+      isDark(context) ? const Color(0xFF34D399) : const Color(0xFF065F46);
+
+  static Color getHalalBgColor(BuildContext context) =>
+      isDark(context)
+          ? const Color(0xFF10B981).withValues(alpha: 0.16)
+          : const Color(0xFFD1FAE5);
+
+  static Color getHalalBorderColor(BuildContext context) =>
+      isDark(context)
+          ? const Color(0xFF34D399).withValues(alpha: 0.4)
+          : const Color(0xFF6EE7B7);
 
   static const Color backgroundLight = Color(0xFFF8F9FA);
   static const Color surfaceLight = Color(0xFFFFFFFF);
@@ -199,7 +239,7 @@ class AppTheme {
       ),
       colorScheme: const ColorScheme.dark(
         primary: primaryBlue,
-        secondary: Color(0xFF60A5FA),
+        secondary: Color(0xFF34D399),
         surface: surfaceDark,
         error: haramRed,
         onPrimary: Colors.white,

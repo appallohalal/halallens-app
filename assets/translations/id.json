@@ -39,7 +39,8 @@
     "manual_entry_hint": "contoh: 3017620422003",
     "search_product": "Cari Produk",
     "auto_scan": "Pemindaian akan dimulai secara otomatis",
-    "powered_by": "Didukung oleh"
+    "powered_by": "Didukung oleh",
+    "geo_ads_notice_text": "Promo & penawaran Halal di dekat Anda"
   },
   "text_scan": {
     "title": "Analisis Teks",
@@ -69,7 +70,13 @@
     "not_found": "Produk Tidak Ditemukan",
     "detailed_breakdown": "Rincian Bahan",
     "barcode_prefix": "Barcode: ",
-    "no_reason": "Tidak ada detail yang tersedia."
+    "no_reason": "Tidak ada detail yang tersedia.",
+    "fallback_title": "Produk Belum Terdaftar",
+    "fallback_desc": "Produk ini belum ada di database. Gunakan AI untuk menganalisis komposisinya:",
+    "scan_label_ai": "Pindai Label Komposisi (AI)",
+    "scan_label_ai_desc": "Ambil foto daftar bahan pada kemasan",
+    "manual_input_ingredients": "Masukkan Komposisi Manual",
+    "manual_input_ingredients_desc": "Ketik atau tempel teks dari kemasan"
   },
   "history": {
     "title": "Riwayat Pemindaian",
@@ -98,7 +105,7 @@
     "saved_desc": "Akses cepat ke item halal favorit Anda",
     "language_title": "Bahasa",
     "theme_title": "Tema",
-    "theme_desc": "Pilih mode sistem, terang, atau gelap.",
+    "theme_desc": "Pilih antara mode terang atau gelap.",
     "about_title": "Tentang",
     "about_desc": "Versi 1.0.0",
     "help_title": "Bantuan",
@@ -108,9 +115,18 @@
     "select_lang_title": "Pilih Bahasa",
     "select_lang_desc": "Pilih bahasa favorit Anda untuk antarmuka aplikasi.",
     "lang_saved": "Preferensi bahasa disimpan",
-    "about_content": "HalalLens adalah asisten verifikasi Halal berbasis AI generasi terbaru yang dirancang untuk konsumen Muslim modern. Di era rantai pasokan pangan global yang kompleks, mengidentifikasi produk yang benar-benar halal bisa menjadi tantangan. Aplikasi kami menggabungkan kecerdasan buatan canggih dengan basis data global besar untuk menyederhanakan proses ini.\n\nFitur Utama:\n• Analisis AI Canggih: Kami menggunakan model Llama 3 Vision dan Teks terbaru dari Groq AI untuk menganalisis bahan secara real time.\n• Basis Data Global: Akses data lebih dari 3 juta produk di seluruh dunia melalui Open Food Facts.\n• Dukungan Multi-Bahasa: Beralih lancar antara 14 bahasa utama.\n• Vision OCR: Tidak ada barcode? Ambil foto daftar bahan dan AI kami akan menerjemahkan serta menganalisisnya secara instan.\n• Kecepatan: Hasil dalam milidetik berkat infrastruktur AI berkinerja tinggi Groq.\n\nMisi kami adalah memberdayakan Muslim di seluruh dunia dengan transparansi, menjadikan belanja halal lebih cepat, aman, dan 100% andal.",
-    "help_content": "Butuh bantuan atau punya saran? Tim HalalLens berkomitmen memberi Anda pengalaman terbaik.\n\nTopik Dukungan Umum:\n• Melaporkan hasil salah: AI kadang bisa salah. Jika Anda melihat status produk yang salah, silakan kirim barcode ke email kami.\n• Produk tidak ditemukan: Jika produk tidak ada di basis data, gunakan fitur 'Pindai Bahan' untuk menganalisis label secara manual.\n• Masalah teknis: Jika aplikasi lambat, periksa koneksi internet Anda karena fitur AI membutuhkan pemrosesan awan.\n\nHubungi Kami:\n• Email: support@halallens.com\n• Situs: www.halallens.com\n• FAQ: Kunjungi pusat bantuan kami di halallens.com/faq\n\nKami biasanya membalas email dalam 24–48 jam. Masukan Anda membantu kami meningkatkan HalalLens untuk semua!",
-    "privacy_content": "Di HalalLens kami percaya privasi Anda adalah hak Anda. Kami merancang aplikasi ini dengan arsitektur 'Privasi Utama'.\n\nPilar utama privasi:\n1. Tanpa pelacakan pribadi: Kami tidak memerlukan pendaftaran akun. Kami tidak mengumpulkan nama, email, atau lokasi Anda.\n2. Data lokal: Riwayat pindai dan produk tersimpan hanya ada di perangkat Anda. Kami tidak bisa melihat apa yang Anda pindai.\n3. AI aman: Gambar yang dikirim untuk analisis diproses melalui API pribadi. Tidak ada data yang disimpan secara permanen.\n4. Izin minimal: Kami hanya butuh akses kamera untuk memindai. Kami tidak mengakses kontak atau file pribadi Anda lainnya.\n\nKepercayaan Anda adalah aset terbesar kami."
+    "about_content": "Allo Halal adalah asisten verifikasi Halal berbasis AI generasi terbaru yang dirancang untuk konsumen Muslim modern. Di era rantai pasokan pangan global yang kompleks, mengidentifikasi produk yang benar-benar halal bisa menjadi tantangan. Aplikasi kami menggabungkan kecerdasan buatan canggih dengan basis data global besar untuk menyederhanakan proses ini.\n\nFitur Utama:\n• Analisis AI Canggih: Kami menggunakan model Llama 3 Vision dan Teks terbaru dari Groq AI untuk menganalisis bahan secara real time.\n• Basis Data Global: Akses data lebih dari 3 juta produk di seluruh dunia melalui Open Food Facts.\n• Dukungan Multi-Bahasa: Beralih lancar antara 14 bahasa utama.\n• Vision OCR: Tidak ada barcode? Ambil foto daftar bahan dan AI kami akan menerjemahkan serta menganalisisnya secara instan.\n• Kecepatan: Hasil dalam milidetik berkat infrastruktur AI berkinerja tinggi Groq.\n\nMisi kami adalah memberdayakan Muslim di seluruh dunia dengan transparansi, menjadikan belanja halal lebih cepat, aman, dan 100% andal.",
+    "help_content": "Butuh bantuan atau punya saran? Tim Allo Halal berkomitmen memberi Anda pengalaman terbaik.\n\nTopik Dukungan Umum:\n• Melaporkan hasil salah: AI kadang bisa salah. Jika Anda melihat status produk yang salah, silakan kirim barcode ke email kami.\n• Produk tidak ditemukan: Jika produk tidak ada di basis data, gunakan fitur 'Pindai Bahan' untuk menganalisis label secara manual.\n• Masalah teknis: Jika aplikasi lambat, periksa koneksi internet Anda karena fitur AI membutuhkan pemrosesan awan.\n\nHubungi Kami:\n• Email: support@allohalal.fr\n• Situs: www.allohalal.fr\n• FAQ: Kunjungi pusat bantuan kami di allohalal.fr/faq\n\nKami biasanya membalas email dalam 24–48 jam. Masukan Anda membantu kami meningkatkan Allo Halal untuk semua!",
+    "privacy_content": "Di Allo Halal kami percaya privasi Anda adalah hak Anda. Kami merancang aplikasi ini dengan arsitektur 'Privasi Utama'.\n\nPilar utama privasi:\n1. Tanpa pelacakan pribadi: Kami tidak memerlukan pendaftaran akun. Kami tidak mengumpulkan nama, email, atau lokasi Anda.\n2. Data lokal: Riwayat pindai dan produk tersimpan hanya ada di perangkat Anda. Kami tidak bisa melihat apa yang Anda pindai.\n3. AI aman: Gambar yang dikirim untuk analisis diproses melalui API pribadi. Tidak ada data yang disimpan secara permanen.\n4. Izin minimal: Kami hanya butuh akses kamera untuk memindai. Kami tidak mengakses kontak atau file pribadi Anda lainnya.\n\nKepercayaan Anda adalah aset terbesar kami.",
+    "edit_profile": "Edit Profil",
+    "edit_profile_desc": "Perbarui nama, email, dan lokasi Anda",
+    "delete_account": "Hapus Akun",
+    "delete_account_desc": "Hak untuk dihapus (GDPR Art. 17)",
+    "delete_account_confirm": "Apakah Anda yakin ingin menghapus akun dan semua data pribadi Anda secara permanen? Tindakan ini tidak dapat dibatalkan (GDPR Art. 17).",
+    "delete_account_btn": "Hapus Permanen",
+    "delete_account_success": "Akun dan data pribadi Anda telah dihapus secara permanen.",
+    "support_project_title": "Dukung Proyek (Bayar Sukarela)",
+    "support_project_subtitle": "Kontribusi sukarela tanpa komitmen"
   },
   "connection": {
     "no_internet_msg": "Masih belum ada koneksi internet.",
@@ -171,7 +187,7 @@
     "city_hint": "mis. Jakarta, Surabaya",
     "city_required": "Silakan tentukan kota Anda",
     "sign_in": "Masuk",
-    "new_to_app": "Baru di HalalLens?",
+    "new_to_app": "Baru di Allo Halal?",
     "create_account": "Buat Akun",
     "create_account_btn": "Buat Akun Gratis",
     "already_have_account": "Sudah punya akun?",
@@ -188,5 +204,22 @@
     "default_ban_reason": "Pelanggaran Pedoman Komunitas atau Ketentuan Layanan",
     "recheck_status": "Periksa Ulang Status",
     "logout_or_switch": "Keluar / Ganti Akun"
+  },
+  "location": {
+    "services_disabled_title": "Lokasi Dinonaktifkan",
+    "services_disabled_desc": "Aktifkan GPS untuk menemukan penawaran dan restoran Halal terdekat.",
+    "enable_btn": "Aktifkan"
+  },
+  "support": {
+    "title": "Model Donasi Bebas (Prix Libre)",
+    "desc": "Allo Halal menolak sistem langganan kaku. Bantu biaya server AI dan pengembangan dengan kontribusi sukarela Anda.",
+    "no_commitment": "Tanpa langganan • Fleksibel • Tanpa komitmen",
+    "slider_label": "Jumlah kontribusi Anda:",
+    "btn_contribute": "Dukung {} €",
+    "thank_you": "Terima kasih banyak atas dukungan Anda!",
+    "tier_coffee": "☕ Traktir kopi tim pengembang",
+    "tier_server": "🌱 Bantu biaya server AI dan komputasi",
+    "tier_growth": "🌟 Percepat penambahan produk baru",
+    "tier_patron": "👑 Menjadi Pelindung resmi Allo Halal"
   }
 }

@@ -166,15 +166,23 @@ class _SavedProductsScreenState extends State<SavedProductsScreen> {
         final item = _savedItems[index];
 
         Color statusColor;
+        Color statusBgColor;
+        Color statusBorderColor;
         switch (item.overallStatus) {
           case HalalStatus.halal:
-            statusColor = AppTheme.primaryBlue;
+            statusColor = AppTheme.getHalalTextColor(context);
+            statusBgColor = AppTheme.getHalalBgColor(context);
+            statusBorderColor = AppTheme.getHalalBorderColor(context);
             break;
           case HalalStatus.haram:
-            statusColor = AppTheme.haramRed;
+            statusColor = AppTheme.getHaramTextColor(context);
+            statusBgColor = AppTheme.getHaramBgColor(context);
+            statusBorderColor = AppTheme.getHaramBorderColor(context);
             break;
           case HalalStatus.doubtful:
-            statusColor = AppTheme.doubtfulAmber;
+            statusColor = AppTheme.getDoubtfulTextColor(context);
+            statusBgColor = AppTheme.getDoubtfulBgColor(context);
+            statusBorderColor = AppTheme.getDoubtfulBorderColor(context);
             break;
         }
 
@@ -201,8 +209,9 @@ class _SavedProductsScreenState extends State<SavedProductsScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: statusColor.withAlpha(30),
+                  color: statusBgColor,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: statusBorderColor),
                 ),
                 child: Icon(
                   item.isImageScan ? IconlyLight.image : IconlyLight.scan,
@@ -242,17 +251,17 @@ class _SavedProductsScreenState extends State<SavedProductsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: statusColor.withAlpha(20),
+                        color: statusBgColor,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: statusColor.withAlpha(50)),
+                        border: Border.all(color: statusBorderColor),
                       ),
                       child: Text(
                         item.overallStatus.labelKey.tr(),
                         style: AppFonts.secondary(
                           context,
                           color: statusColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),

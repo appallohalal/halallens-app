@@ -9,7 +9,11 @@ class SavedProductService {
 
   /// Initialize Hive and open the saved products box
   static Future<void> init() async {
-    await Hive.openBox<String>(_boxName);
+    try {
+      if (!Hive.isBoxOpen(_boxName)) {
+        await Hive.openBox<String>(_boxName);
+      }
+    } catch (_) {}
   }
 
   /// Check if a product is saved based on barcode or name

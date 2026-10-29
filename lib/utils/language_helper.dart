@@ -3,20 +3,15 @@ import 'package:easy_localization/easy_localization.dart';
 
 class LanguageHelper {
   static const List<Map<String, String>> languages = [
+    {'code': 'fr', 'name': 'French', 'nativeName': 'Français'},
     {'code': 'en', 'name': 'English', 'nativeName': 'English'},
     {'code': 'ar', 'name': 'Arabic', 'nativeName': 'العربية'},
-    {'code': 'fr', 'name': 'French', 'nativeName': 'Français'},
-    {'code': 'ur', 'name': 'Urdu', 'nativeName': 'اردو'},
-    {'code': 'tr', 'name': 'Turkish', 'nativeName': 'Türkçe'},
-    {'code': 'id', 'name': 'Indonesian', 'nativeName': 'Bahasa Indonesia'},
-    {'code': 'bn', 'name': 'Bengali', 'nativeName': 'বাংলা'},
     {'code': 'es', 'name': 'Spanish', 'nativeName': 'Español'},
-    {'code': 'hi', 'name': 'Hindi', 'nativeName': 'हिन्दी'},
-    {'code': 'de', 'name': 'German', 'nativeName': 'Deutsch'},
-    {'code': 'zh', 'name': 'Chinese', 'nativeName': '中文'},
-    {'code': 'ru', 'name': 'Russian', 'nativeName': 'Русский'},
-    {'code': 'pt', 'name': 'Portuguese', 'nativeName': 'Português'},
     {'code': 'it', 'name': 'Italian', 'nativeName': 'Italiano'},
+    {'code': 'de', 'name': 'German', 'nativeName': 'Deutsch'},
+    {'code': 'pt', 'name': 'Portuguese', 'nativeName': 'Português'},
+    {'code': 'tr', 'name': 'Turkish', 'nativeName': 'Türkçe'},
+    {'code': 'ru', 'name': 'Russian', 'nativeName': 'Русский'},
   ];
 
   static String getLanguageName(BuildContext context) {

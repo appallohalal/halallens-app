@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'providers/scanner_provider.dart';
 import 'services/theme_service.dart';
@@ -10,58 +12,85 @@ import 'services/saved_product_service.dart';
 import 'services/ad_service.dart';
 import 'services/auth_service.dart';
 import 'config/groq_config.dart';
-import 'config/auth_config.dart';
+import 'config/cms_config.dart';
+import 'config/notification_config.dart';
+import 'services/notification_service.dart';
+import 'services/geo_ad_service.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   EasyLocalization.logger.enableBuildModes = [];
-  await EasyLocalization.ensureInitialized();
-  await HistoryService.init();
-  await SavedProductService.init();
-  await AuthService.instance.init(); // Initialize user session cache
-  await AdService.initialize(); // No-op if ads disabled in AdConfig
-  await GroqConfig.syncFromBackend(); // Sync remote Groq AI configuration
-  await AuthConfig.syncFromBackend(); // Sync remote Mandatory Registration toggle
 
+  // Fast local-only initialization (< 30ms) so the first frame renders immediately
+  // without any black screen or network delay.
   final themeService = ThemeService();
-
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
+  await CmsConfig.loadCachedOnly();
+  await Hive.initFlutter();
+  await Future.wait([
+    EasyLocalization.ensureInitialized(),
+    HistoryService.init(),
+    SavedProductService.init(),
+    AuthService.instance.init(),
+    themeService.loadTheme(),
   ]);
+
+  unawaited(
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]),
+  );
 
   runApp(
     EasyLocalization(
       supportedLocales: const [
+        Locale('fr'),
         Locale('en'),
         Locale('ar'),
-        Locale('fr'),
-        Locale('ur'),
-        Locale('tr'),
-        Locale('id'),
-        Locale('bn'),
         Locale('es'),
-        Locale('hi'),
-        Locale('de'),
-        Locale('zh'),
-        Locale('ru'),
-        Locale('pt'),
         Locale('it'),
+        Locale('de'),
+        Locale('pt'),
+        Locale('tr'),
+        Locale('ru'),
       ],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
+      startLocale: const Locale('fr'),
+      fallbackLocale: const Locale('fr'),
+      assetLoader: const CmsAssetLoader(),
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ScannerProvider()),
           ChangeNotifierProvider.value(value: themeService),
           ChangeNotifierProvider.value(value: AuthService.instance),
+          ChangeNotifierProvider.value(value: GeoAdService.instance),
         ],
         child: const HalalLensApp(),
       ),
     ),
   );
+
+  // Run all remote syncs and SDK initializations asynchronously in the background
+  // after the first UI frame is painted.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_initBackgroundServices());
+  });
+}
+
+Future<void> _initBackgroundServices() async {
+  try {
+    await Future.wait([
+      GroqConfig.syncFromBackend(),
+      AdService.initialize(),
+      NotificationConfig.syncFromBackend().then((_) async {
+        await NotificationService.instance.init();
+        await NotificationService.instance
+            .syncUserTags(AuthService.instance.currentUser);
+      }),
+    ]);
+  } catch (_) {}
 }
 
 class HalalLensApp extends StatefulWidget {

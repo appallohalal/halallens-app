@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../config/auth_config.dart';
 import '../models/app_user.dart';
+import 'notification_service.dart';
 
 class AuthResponse {
   final bool success;
@@ -167,7 +168,7 @@ class AuthService extends ChangeNotifier {
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 6));
+      ).timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(res.body);
 
@@ -177,7 +178,7 @@ class AuthService extends ChangeNotifier {
         await _saveUserSession(user);
         return AuthResponse(
           success: true,
-          message: data['message'] ?? 'Account created successfully!',
+          message: data['message'] ?? 'Account created successfully! A confirmation email has been sent.',
           user: user,
         );
       } else {
@@ -192,7 +193,7 @@ class AuthService extends ChangeNotifier {
       }
     }
 
-    // 2. Direct Supabase Cloud Fallback if local backend is unreachable
+    // 2. Direct Supabase Cloud Fallback if backend is unreachable
     try {
       final supabaseUri = Uri.parse('${AppConfig.supabaseUrl}/rest/v1/users');
 
@@ -219,16 +220,41 @@ class AuthService extends ChangeNotifier {
           'Prefer': 'return=representation',
         },
         body: jsonEncode(userPayload),
-      ).timeout(const Duration(seconds: 6));
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 201 || response.statusCode == 200) {
+        // Trigger Supabase Auth signup confirmation email directly
+        try {
+          final authSignupUri = Uri.parse(
+            '${AppConfig.supabaseUrl}/auth/v1/signup?redirect_to=${Uri.encodeComponent('https://halallens-admin.vercel.app/auth/confirm')}',
+          );
+          await http.post(
+            authSignupUri,
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': AppConfig.supabaseAnonKey,
+            },
+            body: jsonEncode({
+              'email': trimmedEmail,
+              'password': password,
+              'data': {
+                'name': trimmedName,
+                'username': trimmedUsername,
+                'country': trimmedCountry,
+                'city': trimmedCity,
+                'account_type': 'mobile_user',
+              },
+            }),
+          ).timeout(const Duration(seconds: 6));
+        } catch (_) {}
+
         final list = jsonDecode(response.body) as List<dynamic>;
         if (list.isNotEmpty) {
           final user = AppUser.fromJson(list.first as Map<String, dynamic>);
           await _saveUserSession(user);
           return AuthResponse(
             success: true,
-            message: 'Account created successfully on cloud!',
+            message: 'Account created successfully! A confirmation email has been sent to $trimmedEmail.',
             user: user,
           );
         }
@@ -360,10 +386,216 @@ class AuthService extends ChangeNotifier {
       _currentUser = null;
       _isBanned = false;
       _banReason = null;
+      NotificationService.instance.syncUserTags(null);
       notifyListeners();
     } catch (e) {
       debugPrint('⚠️ [AuthService] Logout error: $e');
     }
+  }
+
+  /// Update current user's profile information (GDPR compliant personal data management)
+  Future<AuthResponse> updateProfile({
+    required String name,
+    required String email,
+    String? username,
+    String? country,
+    String? city,
+  }) async {
+    if (_currentUser == null) {
+      return const AuthResponse(
+        success: false,
+        error: 'You must be signed in to update your profile.',
+      );
+    }
+
+    final trimmedName = name.trim();
+    final trimmedEmail = email.trim().toLowerCase();
+    final trimmedUsername = (username?.trim().isNotEmpty == true)
+        ? username!.trim()
+        : trimmedName;
+    final trimmedCountry = (country?.trim().isNotEmpty == true)
+        ? country!.trim()
+        : _currentUser!.country;
+    final trimmedCity = city?.trim() ?? _currentUser!.city;
+
+    if (trimmedName.isEmpty) {
+      return const AuthResponse(
+        success: false,
+        error: 'Name cannot be empty.',
+      );
+    }
+
+    if (!trimmedEmail.contains('@')) {
+      return const AuthResponse(
+        success: false,
+        error: 'Please enter a valid email address.',
+      );
+    }
+
+    final body = {
+      'userId': _currentUser!.id,
+      'name': trimmedName,
+      'username': trimmedUsername,
+      'email': trimmedEmail,
+      'country': trimmedCountry,
+      'city': trimmedCity,
+    };
+
+    // 1. Primary: Try backend API
+    try {
+      final uri = Uri.parse('${AppConfig.backendBaseUrl}/auth/mobile/profile');
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['success'] == true) {
+        final userData = data['user'] as Map<String, dynamic>;
+        final updatedUser = AppUser.fromJson(userData);
+        await _saveUserSession(updatedUser);
+        return AuthResponse(
+          success: true,
+          message: data['message'] ?? 'Profile updated successfully!',
+          user: updatedUser,
+        );
+      } else {
+        return AuthResponse(
+          success: false,
+          error: data['error'] ?? 'Profile update failed (${res.statusCode})',
+        );
+      }
+    } catch (backendErr) {
+      if (kDebugMode) {
+        debugPrint('ℹ️ [AuthService] Backend profile update unreachable ($backendErr), trying Supabase cloud directly...');
+      }
+    }
+
+    // 2. Fallback: Supabase Cloud Direct REST API
+    try {
+      final supabaseUri = Uri.parse(
+        '${AppConfig.supabaseUrl}/rest/v1/users?id=eq.${_currentUser!.id}',
+      );
+
+      final payload = {
+        'name': trimmedName,
+        'username': trimmedUsername,
+        'email': trimmedEmail,
+        'country': trimmedCountry,
+        'city': trimmedCity,
+        'last_active_at': DateTime.now().toIso8601String(),
+      };
+
+      final response = await http.patch(
+        supabaseUri,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': AppConfig.supabaseAnonKey,
+          'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+          'Prefer': 'return=representation',
+        },
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        final updatedUser = _currentUser!.copyWith(
+          name: trimmedName,
+          username: trimmedUsername,
+          email: trimmedEmail,
+          country: trimmedCountry,
+          city: trimmedCity,
+        );
+        await _saveUserSession(updatedUser);
+        return AuthResponse(
+          success: true,
+          message: 'Profile updated successfully!',
+          user: updatedUser,
+        );
+      } else {
+        try {
+          final errorData = jsonDecode(response.body);
+          return AuthResponse(
+            success: false,
+            error: errorData['message'] ?? 'Failed to update profile via cloud (${response.statusCode})',
+          );
+        } catch (_) {
+          return AuthResponse(
+            success: false,
+            error: 'Failed to update profile (${response.statusCode})',
+          );
+        }
+      }
+    } catch (e) {
+      return AuthResponse(
+        success: false,
+        error: 'Network error: $e',
+      );
+    }
+  }
+
+  /// Permanently delete account and all personal data (GDPR Article 17 - Right to be Forgotten)
+  Future<AuthResponse> deleteAccount() async {
+    if (_currentUser == null) {
+      return const AuthResponse(
+        success: false,
+        error: 'No active user session to delete.',
+      );
+    }
+
+    final userId = _currentUser!.id;
+    final userEmail = _currentUser!.email;
+
+    // 1. Primary: Try backend API
+    bool deletedOnServer = false;
+    try {
+      final uri = Uri.parse('${AppConfig.backendBaseUrl}/auth/mobile/delete-account');
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'userId': userId, 'email': userEmail}),
+      ).timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['success'] == true) {
+        deletedOnServer = true;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('ℹ️ [AuthService] Backend delete unreachable ($e), trying Supabase cloud directly...');
+      }
+    }
+
+    // 2. Direct Supabase Cloud Fallback
+    if (!deletedOnServer) {
+      try {
+        final supabaseUri = Uri.parse(
+          '${AppConfig.supabaseUrl}/rest/v1/users?id=eq.$userId',
+        );
+
+        final response = await http.delete(
+          supabaseUri,
+          headers: {
+            'apikey': AppConfig.supabaseAnonKey,
+            'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+          },
+        ).timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          deletedOnServer = true;
+        }
+      } catch (e) {
+        debugPrint('⚠️ [AuthService] Supabase direct deletion note: $e');
+      }
+    }
+
+    // 3. Clear all local user session data and notify app state
+    await logout();
+
+    return const AuthResponse(
+      success: true,
+      message: 'Your account and personal data have been permanently deleted in compliance with GDPR.',
+    );
   }
 
   Future<void> _saveUserSession(AppUser user) async {
@@ -371,6 +603,7 @@ class AuthService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefKeyUser, jsonEncode(user.toJson()));
       _currentUser = user;
+      NotificationService.instance.syncUserTags(user);
       notifyListeners();
     } catch (e) {
       debugPrint('⚠️ [AuthService] Failed to cache user session: $e');

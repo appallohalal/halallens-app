@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import '../models/product.dart';
 import '../models/halal_result.dart';
@@ -9,10 +11,6 @@ import '../models/history_item.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 /// State management provider for the scanner and product analysis flow.
-///
-/// Uses a hybrid approach:
-/// 1. Primary: Groq AI for instant expert-level halal analysis
-/// 2. Fallback: Local database + taxonomy ID matching
 class ScannerProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   final GroqHalalService _groqService = GroqHalalService();
@@ -22,6 +20,7 @@ class ScannerProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _usedAi = false;
+  String? _lastScannedBarcode;
 
   // Getters
   Product? get product => _product;
@@ -30,11 +29,11 @@ class ScannerProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get usedAi => _usedAi;
   bool get isAiEnabled => AppConfig.isAiEnabled;
+  String? get lastScannedBarcode => _lastScannedBarcode;
 
   /// Initializes the provider and the Groq AI service.
   Future<void> initialize() async {
     try {
-      // Initialize Groq AI if API key is configured
       if (AppConfig.isAiEnabled) {
         await _groqService.initialize();
       }
@@ -45,11 +44,13 @@ class ScannerProvider extends ChangeNotifier {
     }
   }
 
-  /// Processes a scanned barcode: fetches product data and checks halal status using AI.
+  /// Processes a scanned barcode or E-number ID: fetches product data and checks halal status.
   Future<void> processBarcode(
     String barcode, {
-    String language = 'English',
+    String language = 'French',
   }) async {
+    final cleanBarcode = barcode.trim();
+    _lastScannedBarcode = cleanBarcode;
     _isLoading = true;
     _errorMessage = null;
     _product = null;
@@ -62,33 +63,99 @@ class ScannerProvider extends ChangeNotifier {
         await _groqService.initialize();
       }
 
-      final fetchedProduct = await _apiService.fetchProduct(barcode);
+      // Check if user entered an E-number code directly (e.g. "E120", "E471")
+      final additiveLookup = await _groqService.lookupSingleAdditive(
+        cleanBarcode,
+        language: language,
+      );
+      if (additiveLookup != null) {
+        _product = additiveLookup.product;
+        _halalResult = additiveLookup.result;
+        _usedAi = true;
+        _isLoading = false;
+        _saveToHistory(additiveLookup.product.name, cleanBarcode, false);
+        notifyListeners();
+        return;
+      }
+
+      final fetchedProduct = await _apiService.fetchProduct(cleanBarcode);
       _product = fetchedProduct;
+
+      HalalStatus? overrideStatus;
+      final ms = fetchedProduct.manualStatus?.toUpperCase().trim();
+      if (ms == 'HALAL') {
+        overrideStatus = HalalStatus.halal;
+      } else if (ms == 'HARAM') {
+        overrideStatus = HalalStatus.haram;
+      } else if (ms == 'MUSHBOOH' || ms == 'DOUBTFUL') {
+        overrideStatus = HalalStatus.doubtful;
+      }
 
       if (_groqService.isAvailable) {
         final aiResult = await _groqService.analyzeIngredients(
           productName: fetchedProduct.name,
+          brand: fetchedProduct.brands,
+          imageUrl: fetchedProduct.imageUrl,
           ingredientsText: fetchedProduct.ingredients,
           parsedIngredients: fetchedProduct.parsedIngredients,
           additives: fetchedProduct.additives,
           language: language,
+          barcode: cleanBarcode,
         );
 
         if (aiResult != null && aiResult.ingredientResults.isNotEmpty) {
-          _halalResult = aiResult;
+          _halalResult = overrideStatus != null
+              ? _enforceProductStatus(aiResult, overrideStatus, fetchedProduct)
+              : aiResult;
           _usedAi = true;
           _isLoading = false;
-          _saveToHistory(fetchedProduct.name, barcode, false);
+          _saveToHistory(fetchedProduct.name, cleanBarcode, false);
+          _syncScannedProductToSupabase(fetchedProduct, _halalResult!);
           notifyListeners();
           return;
-        } else {
-          throw Exception("errors.analysis_failed".tr());
         }
-      } else {
-        throw Exception("errors.service_unavailable".tr());
       }
+
+      // If product has a verified status in Supabase `products`, return that verdict directly
+      if (overrideStatus != null) {
+        final rawList = fetchedProduct.ingredients
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+        final note = (fetchedProduct.moderatorNote?.isNotEmpty == true)
+            ? fetchedProduct.moderatorNote!
+            : 'Vérifié par Allo Halal';
+        final items = rawList.isNotEmpty ? rawList : [fetchedProduct.name];
+        final ingResults = items
+            .map(
+              (item) => IngredientResult(
+                ingredient: item,
+                status: overrideStatus!,
+                reason: note,
+              ),
+            )
+            .toList();
+        _halalResult = HalalResult(
+          overallStatus: overrideStatus,
+          ingredientResults: ingResults,
+          haramIngredients: overrideStatus == HalalStatus.haram ? items : [],
+          doubtfulIngredients:
+              overrideStatus == HalalStatus.doubtful ? items : [],
+          halalIngredients: overrideStatus == HalalStatus.halal ? items : [],
+        );
+        _usedAi = true;
+        _isLoading = false;
+        _saveToHistory(fetchedProduct.name, cleanBarcode, false);
+        _syncScannedProductToSupabase(fetchedProduct, _halalResult!);
+        notifyListeners();
+        return;
+      }
+
+      throw Exception("errors.analysis_failed".tr());
     } on ProductNotFoundException catch (e) {
       _isLoading = false;
+      _lastScannedBarcode = e.barcode ?? cleanBarcode;
       _errorMessage = e.message;
       notifyListeners();
     } on ApiException catch (e) {
@@ -102,11 +169,117 @@ class ScannerProvider extends ChangeNotifier {
     }
   }
 
-  /// Processes raw ingredient text using AI.
+  /// Ensures the ingredient breakdown, counters, and overall status strictly match
+  /// the status configured in the Admin Panel (`HALAL`, `HARAM`, or `MUSHBOOH`).
+  HalalResult _enforceProductStatus(
+    HalalResult aiResult,
+    HalalStatus targetStatus,
+    Product product,
+  ) {
+    final note = (product.moderatorNote?.isNotEmpty == true)
+        ? product.moderatorNote!
+        : 'Vérifié par Allo Halal';
+
+    final updated = List<IngredientResult>.from(aiResult.ingredientResults);
+
+    if (targetStatus == HalalStatus.halal) {
+      for (int i = 0; i < updated.length; i++) {
+        if (updated[i].status != HalalStatus.halal) {
+          updated[i] = IngredientResult(
+            ingredient: updated[i].ingredient,
+            status: HalalStatus.halal,
+            reason: note,
+          );
+        }
+      }
+    } else if (targetStatus == HalalStatus.haram) {
+      final hasHaram = updated.any((i) => i.status == HalalStatus.haram);
+      if (!hasHaram) {
+        // Promote any doubtful ingredient to haram or prepend the admin verification note
+        bool promoted = false;
+        for (int i = 0; i < updated.length; i++) {
+          if (updated[i].status == HalalStatus.doubtful) {
+            updated[i] = IngredientResult(
+              ingredient: updated[i].ingredient,
+              status: HalalStatus.haram,
+              reason: note,
+            );
+            promoted = true;
+          }
+        }
+        if (!promoted) {
+          updated.insert(
+            0,
+            IngredientResult(
+              ingredient: product.name,
+              status: HalalStatus.haram,
+              reason: note,
+            ),
+          );
+        }
+      }
+    } else if (targetStatus == HalalStatus.doubtful) {
+      for (int i = 0; i < updated.length; i++) {
+        if (updated[i].status == HalalStatus.haram) {
+          updated[i] = IngredientResult(
+            ingredient: updated[i].ingredient,
+            status: HalalStatus.doubtful,
+            reason: note,
+          );
+        }
+      }
+      final hasDoubtful = updated.any((i) => i.status == HalalStatus.doubtful);
+      if (!hasDoubtful) {
+        updated.insert(
+          0,
+          IngredientResult(
+            ingredient: product.name,
+            status: HalalStatus.doubtful,
+            reason: note,
+          ),
+        );
+      }
+    }
+
+    final haramList = updated
+        .where((i) => i.status == HalalStatus.haram)
+        .map((i) => i.ingredient)
+        .toList();
+    final doubtfulList = updated
+        .where((i) => i.status == HalalStatus.doubtful)
+        .map((i) => i.ingredient)
+        .toList();
+    final halalList = updated
+        .where((i) => i.status == HalalStatus.halal)
+        .map((i) => i.ingredient)
+        .toList();
+
+    return HalalResult(
+      overallStatus: targetStatus,
+      ingredientResults: updated,
+      haramIngredients: haramList,
+      doubtfulIngredients: doubtfulList,
+      halalIngredients: halalList,
+    );
+  }
+
+  /// Processes raw ingredient text using AI (or barcode / E-number if typed here).
   Future<void> processIngredientText(
     String ingredientText, {
-    String language = 'English',
+    String language = 'French',
+    String? barcode,
   }) async {
+    final trimmed = ingredientText.trim();
+    if (barcode != null && barcode.isNotEmpty) {
+      _lastScannedBarcode = barcode.trim();
+    }
+
+    // If user typed a numeric barcode in the text box, process it as a barcode
+    if (RegExp(r'^\d{6,14}$').hasMatch(trimmed)) {
+      await processBarcode(trimmed, language: language);
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     _product = null;
@@ -119,8 +292,23 @@ class ScannerProvider extends ChangeNotifier {
         await _groqService.initialize();
       }
 
+      // If user typed a single E-number code (e.g. "E120"), return Admin Additive ruling
+      final additiveLookup = await _groqService.lookupSingleAdditive(
+        trimmed,
+        language: language,
+      );
+      if (additiveLookup != null) {
+        _product = additiveLookup.product;
+        _halalResult = additiveLookup.result;
+        _usedAi = true;
+        _isLoading = false;
+        _saveToHistory(additiveLookup.product.name, trimmed, false);
+        notifyListeners();
+        return;
+      }
+
       _product = Product(
-        barcode: '',
+        barcode: barcode ?? '',
         name: 'general.scanned_ingredients'.tr(),
         ingredients: ingredientText,
         additives: [],
@@ -134,13 +322,17 @@ class ScannerProvider extends ChangeNotifier {
           parsedIngredients: [],
           additives: [],
           language: language,
+          barcode: barcode,
         );
 
         if (aiResult != null && aiResult.ingredientResults.isNotEmpty) {
           _halalResult = aiResult;
           _usedAi = true;
           _isLoading = false;
-          _saveToHistory('general.scanned_ingredients'.tr(), null, false);
+          _saveToHistory('general.scanned_ingredients'.tr(), barcode, false);
+          if (barcode != null && barcode.isNotEmpty) {
+            _syncScannedProductToSupabase(_product!, _halalResult!);
+          }
           notifyListeners();
           return;
         } else {
@@ -158,9 +350,13 @@ class ScannerProvider extends ChangeNotifier {
 
   /// Processes an ingredient label image using AI Vision.
   Future<void> processIngredientImage(
-    String imageBase64, {
-    String language = 'English',
+    String base64Image, {
+    String language = 'French',
+    String? barcode,
   }) async {
+    if (barcode != null && barcode.isNotEmpty) {
+      _lastScannedBarcode = barcode.trim();
+    }
     _isLoading = true;
     _errorMessage = null;
     _product = null;
@@ -174,12 +370,13 @@ class ScannerProvider extends ChangeNotifier {
       }
 
       _product = Product(
-        barcode: '',
+        barcode: barcode ?? '',
         name: 'general.scanned_image'.tr(),
-        ingredients: 'general.scanned_image'.tr(),
+        ingredients: 'result.analyzing_image_Label'.tr(),
         additives: [],
         parsedIngredients: [],
       );
+      notifyListeners();
 
       if (_groqService.isAvailable) {
         final aiResult = await _groqService.analyzeIngredients(
@@ -187,15 +384,15 @@ class ScannerProvider extends ChangeNotifier {
           ingredientsText: '',
           parsedIngredients: [],
           additives: [],
-          imageBase64: imageBase64,
+          imageBase64: base64Image,
           language: language,
+          barcode: barcode,
         );
 
         if (aiResult != null && aiResult.ingredientResults.isNotEmpty) {
           _halalResult = aiResult;
-
           _product = Product(
-            barcode: '',
+            barcode: barcode ?? '',
             name: 'general.scanned_image'.tr(),
             ingredients: aiResult.ingredientResults
                 .map((i) => i.ingredient)
@@ -206,7 +403,10 @@ class ScannerProvider extends ChangeNotifier {
 
           _usedAi = true;
           _isLoading = false;
-          _saveToHistory('general.scanned_image'.tr(), null, true);
+          _saveToHistory('general.scanned_image'.tr(), barcode, true);
+          if (barcode != null && barcode.isNotEmpty) {
+            _syncScannedProductToSupabase(_product!, _halalResult!);
+          }
           notifyListeners();
           return;
         } else {
@@ -264,5 +464,84 @@ class ScannerProvider extends ChangeNotifier {
       );
       HistoryService.addHistoryItem(item);
     }
+  }
+
+  /// Automatically syncs any scanned barcode product to Supabase `products` table
+  /// so it appears in the Admin Panel's Product Catalog for moderation/override.
+  Future<void> _syncScannedProductToSupabase(
+    Product product,
+    HalalResult result,
+  ) async {
+    final code = product.barcode.trim();
+    if (code.isEmpty) return;
+
+    try {
+      final checkUri = Uri.parse(
+        '${AppConfig.supabaseUrl}/rest/v1/products?barcode=eq.$code&select=id,scans_count&limit=1',
+      );
+      final checkRes = await http
+          .get(
+            checkUri,
+            headers: {
+              'apikey': AppConfig.supabaseAnonKey,
+              'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+            },
+          )
+          .timeout(const Duration(seconds: 5));
+
+      if (checkRes.statusCode == 200) {
+        final rows = json.decode(checkRes.body) as List<dynamic>;
+        if (rows.isNotEmpty) {
+          final existing = rows.first as Map<String, dynamic>;
+          final id = existing['id'];
+          final currentScans = (existing['scans_count'] as num?)?.toInt() ?? 0;
+          await http.patch(
+            Uri.parse('${AppConfig.supabaseUrl}/rest/v1/products?id=eq.$id'),
+            headers: {
+              'apikey': AppConfig.supabaseAnonKey,
+              'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: json.encode({
+              'scans_count': currentScans + 1,
+              'updated_at': DateTime.now().toIso8601String(),
+            }),
+          );
+          return;
+        }
+      }
+
+      final dbAiStatus = result.overallStatus == HalalStatus.halal
+          ? 'HALAL'
+          : result.overallStatus == HalalStatus.haram
+              ? 'HARAM'
+              : 'MUSHBOOH';
+      final detectedECodes = _groqService
+          .extractECodes(product.additives, product.ingredients)
+          .toList();
+
+      await http.post(
+        Uri.parse('${AppConfig.supabaseUrl}/rest/v1/products'),
+        headers: {
+          'apikey': AppConfig.supabaseAnonKey,
+          'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: json.encode({
+          'barcode': code,
+          'name': product.name,
+          'brand': product.brands ?? '',
+          'image_url': product.imageUrl,
+          'ingredients_raw': product.ingredients,
+          'detected_additives': detectedECodes,
+          'ai_status': dbAiStatus,
+          'is_overridden': false,
+          'scans_count': 1,
+          'updated_at': DateTime.now().toIso8601String(),
+        }),
+      );
+    } catch (_) {}
   }
 }

@@ -9,8 +9,11 @@ class HistoryService {
 
   /// Initialize Hive and open the history box
   static Future<void> init() async {
-    await Hive.initFlutter();
-    await Hive.openBox<String>(_boxName);
+    try {
+      if (!Hive.isBoxOpen(_boxName)) {
+        await Hive.openBox<String>(_boxName);
+      }
+    } catch (_) {}
   }
 
   /// Add a new scan to history

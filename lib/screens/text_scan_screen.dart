@@ -14,7 +14,14 @@ import '../utils/language_helper.dart';
 /// Screen for scanning ingredient text from product packaging using Vision AI.
 /// Supports all languages including Bengali.
 class TextScanScreen extends StatefulWidget {
-  const TextScanScreen({super.key});
+  final bool autoLaunchCamera;
+  final String? initialBarcode;
+
+  const TextScanScreen({
+    super.key,
+    this.autoLaunchCamera = false,
+    this.initialBarcode,
+  });
 
   @override
   State<TextScanScreen> createState() => _TextScanScreenState();
@@ -26,6 +33,18 @@ class _TextScanScreenState extends State<TextScanScreen> {
 
   File? _selectedImage;
   bool _showEditor = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoLaunchCamera) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _pickImage(ImageSource.camera);
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -76,6 +95,7 @@ class _TextScanScreenState extends State<TextScanScreen> {
       context.read<ScannerProvider>().processIngredientImage(
         base64Image,
         language: LanguageHelper.getLanguageName(context),
+        barcode: widget.initialBarcode,
       );
 
       // Navigate to ResultScreen immediately
@@ -111,6 +131,7 @@ class _TextScanScreenState extends State<TextScanScreen> {
     context.read<ScannerProvider>().processIngredientText(
       text,
       language: LanguageHelper.getLanguageName(context),
+      barcode: widget.initialBarcode,
     );
 
     Navigator.push(
@@ -160,6 +181,42 @@ class _TextScanScreenState extends State<TextScanScreen> {
                 ],
               ),
             ),
+
+            if (widget.initialBarcode != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.qr_code_2_rounded,
+                      size: 16,
+                      color: AppTheme.primaryBlue,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${"result.barcode_prefix".tr()}${widget.initialBarcode}',
+                      style: AppFonts.primary(
+                        context,
+                        color: AppTheme.primaryBlue,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             Expanded(
               child: _showEditor ? _buildEditorState() : _buildInitialState(),

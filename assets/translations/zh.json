@@ -39,7 +39,8 @@
     "manual_entry_hint": "例如：3017620422003",
     "search_product": "搜索产品",
     "auto_scan": "扫描将自动开始",
-    "powered_by": "技术支持由"
+    "powered_by": "技术支持由",
+    "geo_ads_notice_text": "您附近的清真精选优惠"
   },
   "text_scan": {
     "title": "文本分析",
@@ -69,7 +70,13 @@
     "not_found": "未找到产品",
     "detailed_breakdown": "详细成分分解",
     "barcode_prefix": "条形码: ",
-    "no_reason": "无可用详情。"
+    "no_reason": "无可用详情。",
+    "fallback_title": "未列出的产品",
+    "fallback_desc": "该产品尚未收录在数据库中。立即使用 AI 分析其配料表：",
+    "scan_label_ai": "扫描配料标签 (视觉 AI)",
+    "scan_label_ai_desc": "拍摄包装上的配料表照片",
+    "manual_input_ingredients": "手动输入配料",
+    "manual_input_ingredients_desc": "输入或粘贴包装上的文字"
   },
   "history": {
     "title": "扫描历史",
@@ -98,8 +105,8 @@
     "saved_desc": "快速访问您喜爱的清真食品",
     "language_title": "语言",
     "theme_title": "主题",
-    "theme_desc": "选择系统默认、浅色或深色模式。",
-    "about_title": "关于 HalalLens",
+    "theme_desc": "在浅色或深色模式之间选择。",
+    "about_title": "关于 Allo Halal",
     "about_desc": "版本 1.0.0",
     "help_title": "帮助与支持",
     "help_desc": "如有疑问请联系我们",
@@ -108,9 +115,18 @@
     "select_lang_title": "选择语言",
     "select_lang_desc": "为应用界面选择您首选的语言。",
     "lang_saved": "语言偏好已保存",
-    "about_content": "HalalLens 是专为现代穆斯林消费者设计的下一代 AI 驱动清真验证助手。在复杂的全球食品供应链时代，识别真正的清真产品可能是一项挑战。我们的应用将先进的人工智能与庞大的全球数据库相结合，以简化这一过程。\n\n关键功能：\n• 先进 AI 分析：我们使用 Groq AI 最新的 Llama 3 视觉与文本模型，实时分析成分。\n• 全球数据库：通过 Open Food Facts 获取全球超过 300 万种产品的数据。\n• 多语言支持：在 14 种主要语言之间无缝切换。\n• 视觉 OCR：没有条形码？拍摄成分表照片，我们的 AI 将即时翻译并分析。\n• 极速响应：依托 Groq 高性能 AI 基础设施，毫秒级返回结果。\n\n我们的使命是为全球穆斯林提供透明度，让清真购物更快速、更安全、100% 可靠。",
-    "help_content": "需要帮助或有建议？HalalLens 团队致力于为您提供最佳体验。\n\n常见支持主题：\n• 报告错误结果：AI 有时会出错。若某产品状态显示有误，请将条形码发邮件给我们。\n• 未找到产品：若数据库中无该产品，可使用“成分扫描”功能手动分析标签。\n• 技术问题：若应用运行缓慢，请检查网络连接，因 AI 功能需云端处理。\n\n联系我们：\n• 邮箱：support@halallens.com\n• 网站：www.halallens.com\n• 常见问题：帮助中心 halallens.com/faq\n\n我们通常在 24–48 小时内回复邮件。您的反馈有助于我们为所有人改进 HalalLens！",
-    "privacy_content": "HalalLens 相信，隐私是您的权利。本应用采用“隐私优先”架构设计。\n\n隐私核心支柱：\n1. 零个人追踪：无需注册账号。我们不收集您的姓名、邮箱或位置。\n2. 本地数据：您的扫描记录和已保存产品仅保存在您的设备上。我们无法看到您扫描的内容。\n3. 安全 AI：用于分析的图片通过私有 API 处理。不会永久存储任何数据。\n4. 最小权限：我们仅需相机权限用于扫描。不会访问您的通讯录或其他个人文件。\n\n您的信任是我们最宝贵的资产。"
+    "about_content": "Allo Halal 是专为现代穆斯林消费者设计的下一代 AI 驱动清真验证助手。在复杂的全球食品供应链时代，识别真正的清真产品可能是一项挑战。我们的应用将先进的人工智能与庞大的全球数据库相结合，以简化这一过程。\n\n关键功能：\n• 先进 AI 分析：我们使用 Groq AI 最新的 Llama 3 视觉与文本模型，实时分析成分。\n• 全球数据库：通过 Open Food Facts 获取全球超过 300 万种产品的数据。\n• 多语言支持：在 14 种主要语言之间无缝切换。\n• 视觉 OCR：没有条形码？拍摄成分表照片，我们的 AI 将即时翻译并分析。\n• 极速响应：依托 Groq 高性能 AI 基础设施，毫秒级返回结果。\n\n我们的使命是为全球穆斯林提供透明度，让清真购物更快速、更安全、100% 可靠。",
+    "help_content": "需要帮助或有建议？Allo Halal 团队致力于为您提供最佳体验。\n\n常见支持主题：\n• 报告错误结果：AI 有时会出错。若某产品状态显示有误，请将条形码发邮件给我们。\n• 未找到产品：若数据库中无该产品，可使用“成分扫描”功能手动分析标签。\n• 技术问题：若应用运行缓慢，请检查网络连接，因 AI 功能需云端处理。\n\n联系我们：\n• 邮箱：support@allohalal.fr\n• 网站：www.allohalal.fr\n• 常见问题：帮助中心 allohalal.fr/faq\n\n我们通常在 24–48 小时内回复邮件。您的反馈有助于我们为所有人改进 Allo Halal！",
+    "privacy_content": "Allo Halal 相信，隐私是您的权利。本应用采用“隐私优先”架构设计。\n\n隐私核心支柱：\n1. 零个人追踪：无需注册账号。我们不收集您的姓名、邮箱或位置。\n2. 本地数据：您的扫描记录和已保存产品仅保存在您的设备上。我们无法看到您扫描的内容。\n3. 安全 AI：用于分析的图片通过私有 API 处理。不会永久存储任何数据。\n4. 最小权限：我们仅需相机权限用于扫描。不会访问您的通讯录或其他个人文件。\n\n您的信任是我们最宝贵的资产。",
+    "edit_profile": "编辑个人资料",
+    "edit_profile_desc": "更新您的姓名、邮箱和地址",
+    "delete_account": "删除账户",
+    "delete_account_desc": "永久删除数据的权利（GDPR 第 17 条）",
+    "delete_account_confirm": "您确定要永久删除您的账户和所有个人数据吗？此操作无法撤销（符合 GDPR 第 17 条）。",
+    "delete_account_btn": "永久删除",
+    "delete_account_success": "您的账户和个人数据已被永久删除。",
+    "support_project_title": "支持项目 (随喜支持)",
+    "support_project_subtitle": "自愿支持，无任何强制订阅"
   },
   "connection": {
     "no_internet_msg": "目前没有网络连接。",
@@ -171,7 +187,7 @@
     "city_hint": "例如：北京、上海",
     "city_required": "请指明您的城市",
     "sign_in": "登录",
-    "new_to_app": "刚使用 HalalLens？",
+    "new_to_app": "刚使用 Allo Halal？",
     "create_account": "创建账号",
     "create_account_btn": "免费创建账号",
     "already_have_account": "已有账号？",
@@ -188,5 +204,22 @@
     "default_ban_reason": "违反社区准则或服务条款",
     "recheck_status": "重新检查状态",
     "logout_or_switch": "登出 / 切换账户"
+  },
+  "location": {
+    "services_disabled_title": "位置已关闭",
+    "services_disabled_desc": "开启 GPS 以发现您附近的清真优惠和餐厅。",
+    "enable_btn": "开启"
+  },
+  "support": {
+    "title": "随喜支持模型 (Prix Libre)",
+    "desc": "Allo Halal 拒绝强制订阅。您可以根据自身情况自愿选择赞助金额，以协助我们维护 AI 服务器和持续开发。",
+    "no_commitment": "无需订阅 • 自由选择 • 无绑定",
+    "slider_label": "您的支持金额：",
+    "btn_contribute": "支持 {} €",
+    "thank_you": "衷心感谢您对社区的大力支持！",
+    "tier_coffee": "☕ 请开发团队喝杯咖啡",
+    "tier_server": "🌱 支持 AI 服务器与云端计算成本",
+    "tier_growth": "🌟 加速新功能和新产品收录",
+    "tier_patron": "👑 成为 Allo Halal 官方赞助者"
   }
 }

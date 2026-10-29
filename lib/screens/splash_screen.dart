@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:iconly/iconly.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
@@ -10,6 +10,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'auth_screen.dart';
 import 'banned_screen.dart';
 import '../config/auth_config.dart';
+import '../config/cms_config.dart';
 import '../services/auth_service.dart';
 import '../theme/app_fonts.dart';
 
@@ -27,12 +28,18 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigateToNextScreen();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/app_logo.png'), context);
+  }
+
   Future<void> _navigateToNextScreen() async {
     final connectivityResults = await Connectivity().checkConnectivity();
 
     if (connectivityResults.contains(ConnectivityResult.none) ||
         connectivityResults.isEmpty) {
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(milliseconds: 900));
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const NoConnectionScreen()),
@@ -40,12 +47,30 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    await Future.delayed(const Duration(seconds: 3));
+    // Run remote config syncs & ban check in parallel with a snappy 1.2s splash display.
+    // Capped at 2.2s max so slow networks never delay app launch.
+    final prefsFuture = SharedPreferences.getInstance();
+    await Future.wait([
+      Future.delayed(const Duration(milliseconds: 1200)),
+      Future.wait([
+        AuthConfig.syncFromBackend(),
+        CmsConfig.syncFromBackend(),
+        AuthService.instance.checkBanStatus(),
+      ]).timeout(
+        const Duration(milliseconds: 2000),
+        onTimeout: () => [],
+      ),
+    ]);
 
     if (!mounted) return;
 
-    // Verify live ban status from Supabase
-    await AuthService.instance.checkBanStatus();
+    // Reload localization delegate in-place if CMS texts were updated from backend
+    if (CmsConfig.texts.isNotEmpty) {
+      try {
+        await context.setLocale(context.locale);
+      } catch (_) {}
+    }
+
     if (!mounted) return;
 
     if (AuthService.instance.isBanned) {
@@ -55,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await prefsFuture;
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
     if (!mounted) return;
@@ -95,83 +120,53 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      body: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue,
-                    borderRadius: BorderRadius.circular(24),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBlue,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
-                  child: const Icon(
-                    IconlyBold.shield_done,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'general.app_name'.tr(),
-                  style: AppFonts.primary(
-                    context,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.getTextPrimary(context),
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'general.splash_subtitle'.tr(),
-                  style: AppFonts.primary(
-                    context,
-                    fontSize: 16,
-                    color: AppTheme.getTextSecondary(context),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Image.asset(
+                'assets/app_logo.png',
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'home.powered_by'.tr(),
-                  style: AppFonts.primary(
-                    context,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.getTextSecondary(
-                      context,
-                    ),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'general.groq_ai'.tr(),
-                  style: AppFonts.primary(
-                    context,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.getTextPrimary(context),
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 24),
+            Text(
+              'general.app_name'.tr(),
+              style: AppFonts.primary(
+                context,
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.getTextPrimary(context),
+                letterSpacing: -0.5,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'general.splash_subtitle'.tr(),
+              style: AppFonts.primary(
+                context,
+                fontSize: 16,
+                color: AppTheme.getTextSecondary(context),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

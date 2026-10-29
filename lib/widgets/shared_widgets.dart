@@ -96,9 +96,9 @@ class StatusCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppFonts.primary(
                 context,
-                color: Colors.white.withValues(alpha: 0.85),
+                color: Colors.white.withValues(alpha: 0.95),
                 fontSize: 14,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -114,7 +114,7 @@ class StatusCard extends StatelessWidget {
       case HalalStatus.haram:
         return AppTheme.haramSolid;
       case HalalStatus.doubtful:
-        return AppTheme.doubtfulSolid;
+        return const Color(0xFFB45309);
     }
   }
 }
@@ -127,15 +127,19 @@ class IngredientTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = _getTextColor(context);
+    final bgColor = _getBgColor(context);
+    final borderColor = _getBorderColor(context);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _getBorderColor().withValues(alpha: 0.3),
-          width: 1,
+          color: borderColor,
+          width: result.status == HalalStatus.doubtful ? 1.4 : 1.0,
         ),
       ),
       child: Row(
@@ -145,13 +149,14 @@ class IngredientTile extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: _getBorderColor().withValues(alpha: 0.15),
+              color: bgColor,
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: borderColor.withValues(alpha: 0.6)),
             ),
             child: Center(
               child: Icon(
                 _getStatusIcon(result.status),
-                color: _getBorderColor(),
+                color: textColor,
                 size: 20,
               ),
             ),
@@ -184,19 +189,22 @@ class IngredientTile extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: _getBorderColor().withValues(alpha: 0.15),
+              color: bgColor,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: borderColor),
             ),
             child: Text(
               result.status.labelKey.tr(),
               style: AppFonts.primary(
                 context,
-                color: _getBorderColor(),
+                color: textColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
+                letterSpacing: 0.3,
               ),
             ),
           ),
@@ -216,14 +224,36 @@ class IngredientTile extends StatelessWidget {
     }
   }
 
-  Color _getBorderColor() {
+  Color _getTextColor(BuildContext context) {
     switch (result.status) {
       case HalalStatus.halal:
-        return AppTheme.halalGreen;
+        return AppTheme.getHalalTextColor(context);
       case HalalStatus.haram:
-        return AppTheme.haramRed;
+        return AppTheme.getHaramTextColor(context);
       case HalalStatus.doubtful:
-        return AppTheme.doubtfulAmber.withAlpha(50);
+        return AppTheme.getDoubtfulTextColor(context);
+    }
+  }
+
+  Color _getBgColor(BuildContext context) {
+    switch (result.status) {
+      case HalalStatus.halal:
+        return AppTheme.getHalalBgColor(context);
+      case HalalStatus.haram:
+        return AppTheme.getHaramBgColor(context);
+      case HalalStatus.doubtful:
+        return AppTheme.getDoubtfulBgColor(context);
+    }
+  }
+
+  Color _getBorderColor(BuildContext context) {
+    switch (result.status) {
+      case HalalStatus.halal:
+        return AppTheme.getHalalBorderColor(context);
+      case HalalStatus.haram:
+        return AppTheme.getHaramBorderColor(context);
+      case HalalStatus.doubtful:
+        return AppTheme.getDoubtfulBorderColor(context);
     }
   }
 

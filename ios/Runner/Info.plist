@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>HalalLens</string>
+	<string>Allo Halal</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>halallens</string>
+	<string>allohalal</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,9 +25,11 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>HalalLens needs camera access to scan product barcodes and ingredient labels.</string>
+	<string>Allo Halal needs camera access to scan product barcodes and ingredient labels.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>HalalLens needs photo library access to select images of ingredient labels for analysis.</string>
+	<string>Allo Halal needs photo library access to select images of ingredient labels for analysis.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Allo Halal uses your location to show verified local Halal grocers, restaurants, and partner offers near you.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
