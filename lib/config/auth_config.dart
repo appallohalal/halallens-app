@@ -146,7 +146,7 @@ class AuthConfig {
           'apikey': AppConfig.supabaseAnonKey,
           'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
         },
-      ).timeout(const Duration(seconds: 2));
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final list = jsonDecode(response.body) as List<dynamic>;
@@ -230,7 +230,18 @@ class AuthConfig {
   static void _applySupabaseRow(Map<String, dynamic> row) {
     _forceUserAuth = row['force_user_auth'] == true;
     _allowGuestScan = row['allow_guest_scan'] != false;
-    _enableContributions = row['enable_contributions'] != false;
+    
+    final contrib = row['enable_contributions'];
+    if (contrib is bool) {
+      _enableContributions = contrib;
+    } else if (contrib is String) {
+      _enableContributions = contrib.toLowerCase() == 'true';
+    } else if (contrib is num) {
+      _enableContributions = contrib != 0;
+    } else {
+      _enableContributions = contrib != false;
+    }
+
     _requireEmailVerification = row['require_email_verification'] == true;
 
     _parseContributionSettings(row);

@@ -15,6 +15,14 @@ class SupportDialog extends StatefulWidget {
 
   /// Displays the Support Dialog as a non-overflowing Modal Bottom Sheet.
   static Future<void> show(BuildContext context) {
+    if (!AuthConfig.isContributionsEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Contributions are currently disabled.'),
+        ),
+      );
+      return Future.value();
+    }
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,

@@ -13,6 +13,7 @@ import '../services/auth_service.dart';
 import 'auth_screen.dart';
 import 'edit_profile_screen.dart';
 import '../config/cms_config.dart';
+import '../config/auth_config.dart';
 import '../widgets/support_dialog.dart';
 import 'support_screen.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     CmsConfig.syncFromBackend();
+    AuthConfig.syncFromBackend().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -640,6 +644,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSupportBanner(BuildContext context) {
+    if (!AuthConfig.isContributionsEnabled) {
+      return const SizedBox.shrink();
+    }
     final isDark = AppTheme.isDark(context);
 
     // Eye-catching, spacious hero block with Warm Amber, Gold and Warm Green accents
