@@ -226,7 +226,7 @@ class AuthService extends ChangeNotifier {
         // Trigger Supabase Auth signup confirmation email directly
         try {
           final authSignupUri = Uri.parse(
-            '${AppConfig.supabaseUrl}/auth/v1/signup?redirect_to=${Uri.encodeComponent('https://halallens-admin.vercel.app/auth/confirm')}',
+            '${AppConfig.supabaseUrl}/auth/v1/signup?redirect_to=${Uri.encodeComponent('https://allohalal-admin.vercel.app/auth/confirm')}',
           );
           await http.post(
             authSignupUri,

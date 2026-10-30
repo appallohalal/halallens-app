@@ -6,7 +6,7 @@ class AppConfig {
   /// Live Production Admin Backend URL (Vercel)
   static const String _envBackendUrl = String.fromEnvironment('BACKEND_URL');
   static const String _liveBackendUrl =
-      'https://halallens-admin.vercel.app/api/v1';
+      'https://allohalal-admin.vercel.app/api/v1';
 
   /// Supabase Cloud configuration for direct resilient access
   static const String supabaseUrl = 'https://mkqovvoarufmawtosfbi.supabase.co';
