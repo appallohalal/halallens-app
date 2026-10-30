@@ -9,9 +9,9 @@ class AppConfig {
       'https://halallens-admin.vercel.app/api/v1';
 
   /// Supabase Cloud configuration for direct resilient access
-  static const String supabaseUrl = 'https://nkhlqwotyadtzdtmkatj.supabase.co';
+  static const String supabaseUrl = 'https://mkqovvoarufmawtosfbi.supabase.co';
   static const String supabaseAnonKey =
-      'sb_publishable_a0ryV5Kjh5lbsnsK1V5Q0g_-r1tsj1c';
+      'sb_publishable_hUN6voInwirFJLjhmee8fg_t1THznkJ';
 
   static String get backendBaseUrl {
     if (_envBackendUrl.isNotEmpty) return _envBackendUrl;
