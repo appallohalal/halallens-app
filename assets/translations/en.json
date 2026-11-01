@@ -80,7 +80,9 @@
     "scan_label_ai": "Scan Ingredient Label (Vision AI)",
     "scan_label_ai_desc": "Take a photo of the ingredient list on packaging",
     "manual_input_ingredients": "Enter Ingredients Manually",
-    "manual_input_ingredients_desc": "Type or paste the text from the packaging"
+    "manual_input_ingredients_desc": "Type or paste the text from the packaging",
+    "analyzing_image_label": "Analyzing image...",
+    "analyzing_image_Label": "Analyzing image..."
   },
   "history": {
     "title": "Scan History",
@@ -114,6 +116,8 @@
     "history_desc": "View your previously scanned products",
     "saved_title": "Saved Products",
     "saved_desc": "Quick access to your favorite halal items",
+    "nearby_businesses_title": "Nearby Businesses & Ads",
+    "nearby_businesses_desc": "Discover partner businesses and offers around you",
     "language_title": "Language",
     "theme_title": "Theme",
     "theme_desc": "Choose between light or dark mode.",
@@ -238,5 +242,26 @@
     "tier_server": "🌱 Help cover AI server & cloud costs",
     "tier_growth": "🌟 Speed up development & new features",
     "tier_patron": "👑 Become an official Allo Halal Patron"
+  },
+  "directory": {
+    "title": "Nearby Businesses & Ads",
+    "all": "All",
+    "butcher": "Butchers",
+    "restaurant": "Restaurants",
+    "grocery": "Groceries",
+    "bakery": "Bakeries",
+    "search_hint": "Search a business, restaurant, city...",
+    "directions": "Directions",
+    "visit_offer": "View Offer",
+    "verified_partner": "VERIFIED PARTNER",
+    "recommended_partner": "RECOMMENDED PARTNER",
+    "certified_by": "Certified by: {}",
+    "certifying_body": "Certifying body",
+    "no_results": "No businesses found",
+    "no_results_desc": "Try modifying your search or refresh.",
+    "refresh": "Refresh",
+    "gps_disabled": "Turn on GPS to discover businesses around you.",
+    "gps_denied": "Grant location permission to calculate exact distances.",
+    "activate": "Enable"
   }
 }

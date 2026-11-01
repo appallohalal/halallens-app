@@ -406,7 +406,9 @@ class _GeoAdBannerWidgetState extends State<GeoAdBannerWidget> {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                'general.featured_partner'.tr(),
+                                ad.partnerBadge.trim().isNotEmpty
+                                    ? ad.partnerBadge.trim()
+                                    : 'general.featured_partner'.tr(),
                                 style: AppFonts.primary(
                                   context,
                                   color: Colors.white,

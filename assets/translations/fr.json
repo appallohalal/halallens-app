@@ -80,7 +80,9 @@
     "scan_label_ai": "Scanner l'étiquette d'ingrédients (IA)",
     "scan_label_ai_desc": "Prendre en photo la liste des ingrédients",
     "manual_input_ingredients": "Saisie manuelle des ingrédients",
-    "manual_input_ingredients_desc": "Tapez ou collez le texte figurant sur l'emballage"
+    "manual_input_ingredients_desc": "Tapez ou collez le texte figurant sur l'emballage",
+    "analyzing_image_label": "Analyse de l'image en cours...",
+    "analyzing_image_Label": "Analyse de l'image en cours..."
   },
   "history": {
     "title": "Historique des Scans",
@@ -114,6 +116,8 @@
     "history_desc": "Voir les produits déjà scannés",
     "saved_title": "Produits enregistrés",
     "saved_desc": "Accès rapide à vos articles favoris",
+    "nearby_businesses_title": "Commerces & Annonces à proximité",
+    "nearby_businesses_desc": "Découvrez les commerces et offres partenaires autour de vous",
     "language_title": "Langue",
     "theme_title": "Thème",
     "theme_desc": "Choisissez le mode clair ou sombre.",
@@ -238,5 +242,26 @@
     "tier_server": "🌱 Participez aux coûts des serveurs IA",
     "tier_growth": "🌟 Accélérez le développement et l'ajout de produits",
     "tier_patron": "👑 Devenez un Bienfaiteur officiel d'Allo Halal"
+  },
+  "directory": {
+    "title": "Commerces & Annonces à proximité",
+    "all": "Tous",
+    "butcher": "Boucheries",
+    "restaurant": "Restaurants",
+    "grocery": "Épiceries",
+    "bakery": "Boulangeries",
+    "search_hint": "Rechercher un commerce, restaurant, ville...",
+    "directions": "Itinéraire",
+    "visit_offer": "Voir l'offre",
+    "verified_partner": "PARTENAIRE VÉRIFIÉ",
+    "recommended_partner": "PARTENAIRE RECOMMANDÉ",
+    "certified_by": "Certifié par : {}",
+    "certifying_body": "Organisme certificateur",
+    "no_results": "Aucun commerce trouvé",
+    "no_results_desc": "Essayez de modifier votre recherche ou d'actualiser.",
+    "refresh": "Actualiser",
+    "gps_disabled": "Activez votre GPS pour localiser les commerces autour de vous.",
+    "gps_denied": "Autorisez l'accès à la localisation pour calculer les distances exactes.",
+    "activate": "Activer"
   }
 }
