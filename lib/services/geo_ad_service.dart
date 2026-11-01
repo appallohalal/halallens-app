@@ -149,7 +149,9 @@ class GeoAdService extends ChangeNotifier {
 
   /// Checks if device location service (GPS) is turned on
   Future<bool> isLocationServiceEnabled() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
       try {
         final enabled = await _locationChannel
             .invokeMethod<bool>('isLocationServiceEnabled');
@@ -161,7 +163,9 @@ class GeoAdService extends ChangeNotifier {
 
   /// Opens the native device location settings screen
   Future<bool> openLocationSettings() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
       try {
         final ok =
             await _locationChannel.invokeMethod<bool>('openLocationSettings');
@@ -173,7 +177,9 @@ class GeoAdService extends ChangeNotifier {
 
   /// Opens the native app settings screen (for permission recovery)
   Future<bool> openAppSettings() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
       try {
         final ok = await _locationChannel.invokeMethod<bool>('openAppSettings');
         return ok ?? false;
@@ -188,22 +194,24 @@ class GeoAdService extends ChangeNotifier {
     _isLoading = true;
 
     try {
-      // 1. Obtain current GPS coordinates from native OS location provider
+      // 1. Obtain current GPS coordinates from native OS location provider (Android & iOS)
       final coords = await _getUserCoordinates();
-      if (coords == null) {
-        _matchingAds = [];
-        _isLoading = false;
-        notifyListeners();
-        return;
+      if (coords != null) {
+        _userLat = coords.$1;
+        _userLng = coords.$2;
+
+        // Fetch active campaigns matching user location & broadcast radius
+        final campaigns = await _fetchAndFilterFromSupabase(_userLat!, _userLng!);
+        if (campaigns.isNotEmpty) {
+          _matchingAds = campaigns;
+          return;
+        }
       }
 
-      _userLat = coords.$1;
-      _userLng = coords.$2;
-
-      // 2. Fetch active campaigns directly from Supabase REST (fast & resilient)
-      // with fallback to Backend API /api/v1/ads
-      final campaigns = await _fetchAndFilterFromSupabase(_userLat!, _userLng!);
-      _matchingAds = campaigns;
+      // 2. Fallback: If GPS is unavailable/permission pending or no immediate radius cutoff,
+      // load active partner campaigns so advertisements always render seamlessly
+      await fetchAllPartnerBusinesses();
+      _matchingAds = _allAds;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('ℹ️ GeoAdService refresh error: $e');
@@ -362,11 +370,13 @@ class GeoAdService extends ChangeNotifier {
   }
 
   Future<(double, double)?> _getUserCoordinates() async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
       try {
         final res = await _locationChannel
             .invokeMapMethod<String, dynamic>('getCurrentLocation')
-            .timeout(const Duration(seconds: 6), onTimeout: () => null);
+            .timeout(const Duration(seconds: 8), onTimeout: () => null);
 
         if (res != null) {
           final status = res['status']?.toString();

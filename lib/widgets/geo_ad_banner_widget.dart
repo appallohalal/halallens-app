@@ -44,7 +44,9 @@ class _GeoAdBannerWidgetState extends State<GeoAdBannerWidget> {
     _autoSlideTimer?.cancel();
     _autoSlideTimer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (!mounted) return;
-      final ads = GeoAdService.instance.matchingAds;
+      final ads = GeoAdService.instance.matchingAds.isNotEmpty
+          ? GeoAdService.instance.matchingAds
+          : GeoAdService.instance.allAds;
       if (ads.length <= 1 || !_pageController.hasClients) return;
       final nextPage = (_currentIndex + 1) % ads.length;
       _pageController.animateToPage(
@@ -165,7 +167,9 @@ class _GeoAdBannerWidgetState extends State<GeoAdBannerWidget> {
           );
         }
 
-        final ads = geoService.matchingAds;
+        final ads = geoService.matchingAds.isNotEmpty
+            ? geoService.matchingAds
+            : geoService.allAds;
         if (ads.isEmpty) {
           return const SizedBox.shrink();
         }
@@ -278,9 +282,11 @@ class _GeoAdBannerWidgetState extends State<GeoAdBannerWidget> {
   }
 
   Widget _buildAdCard(BuildContext context, GeoAdCampaign ad, bool isDark) {
-    final distanceLabel = ad.distanceKm < 1.0
-        ? 'general.distance_m'.tr(args: ['${(ad.distanceKm * 1000).round()}'])
-        : 'general.distance_km'.tr(args: [ad.distanceKm.toStringAsFixed(1)]);
+    final distanceLabel = ad.distanceKm > 0.0
+        ? (ad.distanceKm < 1.0
+            ? 'general.distance_m'.tr(args: ['${(ad.distanceKm * 1000).round()}'])
+            : 'general.distance_km'.tr(args: [ad.distanceKm.toStringAsFixed(1)]))
+        : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -424,46 +430,47 @@ class _GeoAdBannerWidgetState extends State<GeoAdBannerWidget> {
                     ),
 
                     // Distance Pill
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryBlue.withValues(alpha: 0.88),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.22),
-                              width: 0.8,
+                    if (distanceLabel != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4.5,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                IconlyBold.location,
-                                color: Colors.white,
-                                size: 11.5,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.88),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                width: 0.8,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                distanceLabel,
-                                style: AppFonts.primary(
-                                  context,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  IconlyBold.location,
                                   color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
+                                  size: 11.5,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  distanceLabel,
+                                  style: AppFonts.primary(
+                                    context,
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

@@ -30,6 +30,8 @@
 	<string>Allo Halal needs photo library access to select images of ingredient labels for analysis.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allo Halal uses your location to show verified local Halal grocers, restaurants, and partner offers near you.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allo Halal uses your location to show verified local Halal grocers, restaurants, and partner offers near you.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
