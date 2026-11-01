@@ -142,14 +142,27 @@ class NotificationService {
       final messaging = FirebaseMessaging.instance;
       if (NotificationConfig.isEnabled) {
         await messaging.setAutoInitEnabled(true);
-        await messaging.requestPermission(
+        final settings = await messaging.requestPermission(
           alert: true,
           badge: true,
           sound: true,
+          provisional: false,
         );
-        await messaging.subscribeToTopic('all');
+        if (kDebugMode) {
+          debugPrint('ℹ️ Push permission status: ${settings.authorizationStatus}');
+        }
+
+        try {
+          await messaging.subscribeToTopic('all');
+          await messaging.subscribeToTopic('global_alerts');
+        } catch (e) {
+          if (kDebugMode) debugPrint('ℹ️ Topic subscribe note: $e');
+        }
       } else {
-        await messaging.unsubscribeFromTopic('all');
+        try {
+          await messaging.unsubscribeFromTopic('all');
+          await messaging.unsubscribeFromTopic('global_alerts');
+        } catch (_) {}
         await messaging.setAutoInitEnabled(false);
         await messaging.deleteToken();
       }
