@@ -127,6 +127,10 @@ class LocationPlugin: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     if let registrar = self.registrar(forPlugin: "LocationPlugin") {
       LocationPlugin.register(with: registrar)
     }
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+    }
+    application.registerForRemoteNotifications()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
