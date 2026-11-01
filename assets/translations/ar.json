@@ -80,7 +80,9 @@
     "scan_label_ai": "مسح ملصق المكونات (رؤية الذكاء الاصطناعي)",
     "scan_label_ai_desc": "التقط صورة لقائمة المكونات على العبوة",
     "manual_input_ingredients": "إدخال المكونات يدوياً",
-    "manual_input_ingredients_desc": "اكتب أو الصق النص الموجود على العبوة"
+    "manual_input_ingredients_desc": "اكتب أو الصق النص الموجود على العبوة",
+    "analyzing_image_label": "جارٍ تحليل الصورة...",
+    "analyzing_image_Label": "جارٍ تحليل الصورة..."
   },
   "history": {
     "title": "سجل المسح",
@@ -108,6 +110,8 @@
     "history_desc": "عرض منتجاتك الممسوحة سابقاً",
     "saved_title": "المنتجات المحفوظة",
     "saved_desc": "وصول سريع لأصنافك الحلال المفضلة",
+    "nearby_businesses_title": "المتاجر والإعلانات القريبة",
+    "nearby_businesses_desc": "اكتشف المتاجر وعروض الشركاء من حولك",
     "language_title": "اللغة",
     "theme_title": "المظهر",
     "theme_desc": "اختر بين الوضع الفاتح أو الداكن.",
@@ -215,7 +219,7 @@
     "default_ban_reason": "انتهاك إرشادات المجتمع أو شروط الخدمة",
     "recheck_status": "إعادة التحقق من الحالة",
     "logout_or_switch": "تسجيل الخروج / تبديل الحساب",
-    "terms_content": "Bienvenue sur Allo Halal. En créant un compte, vous acceptez les présentes Conditions d'utilisation.\n\n1. Objectif et vérification :\nAllo Halal aide les consommateurs à analyser les ingrédients des produits et à identifier les additifs halal, haram ou douteux. Bien que notre base de données et nos modèles d'IA soient continuellement mis à jour, les consommateurs doivent vérifier auprès des organismes de certification halal agréés en cas de doute.\n\n2. Responsabilité du compte :\nVous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les actions effectuées sous votre compte.\n\n3. Intégrité de la communauté :\nLes utilisateurs s'engagent à utiliser le service de manière appropriée et honnête.\n\nMerci de faire partie de la communauté Allo Halal.",
+    "terms_content": "مرحبًا بك في Allo Halal. بإنشاء حساب، فإنك توافق على شروط الاستخدام هذه.\n\n1. الهدف والتحقق:\nيساعد Allo Halal المستهلكين في تحليل مكونات المنتجات والتعرف على المضافات الحلال أو الحرام أو المشبوهة. على الرغم من تحديث قاعدة بياناتنا ونماذج الذكاء الاصطناعي باستمرار، يجب على المستهلكين التحقق مع جهات اعتماد الحلال المعتمدة في حالة الشك.\n\n2. مسؤولية الحساب:\nأنت مسؤول عن الحفاظ على سرية بيانات تسجيل الدخول الخاصة بك وجميع الأنشطة التي تتم بموجب حسابك.\n\n3. نزاهة المجتمع:\nيلتزم المستخدمون باستخدام الخدمة بنزاهة وعدم نشر مراجعات كاذبة.\n\nشكرًا لانضمامك إلى مجتمع Allo Halal.",
     "and": "و",
     "register_success": "تم إنشاء الحساب بنجاح! تم إرسال رسالة ترحيب.",
     "checking": "جاري التحقق...",
@@ -238,5 +242,23 @@
     "tier_server": "🌱 المساعدة في تكاليف خوادم الذكاء الاصطناعي",
     "tier_growth": "🌟 تسريع التطوير وإضافة منتجات جديدة",
     "tier_patron": "👑 كن راعياً رسمياً لألو حلال"
+  },
+  "directory": {
+    "title": "المتاجر والإعلانات القريبة",
+    "all": "الكل",
+    "butcher": "ملاحم",
+    "restaurant": "مطاعم",
+    "grocery": "بقالة",
+    "bakery": "مخابز",
+    "search_hint": "ابحث عن متجر، مطعم، مدينة...",
+    "directions": "الاتجاهات",
+    "visit_offer": "عرض العرض",
+    "verified_partner": "شريك موثق",
+    "no_results": "لم يتم العثور على متاجر",
+    "no_results_desc": "جرب تعديل بحثك أو التحديث.",
+    "refresh": "تحديث",
+    "gps_disabled": "قم بتشغيل GPS لاكتشاف المتاجر القريبة منك.",
+    "gps_denied": "امنح إذن الموقع لحساب المسافة بدقة.",
+    "activate": "تفعيل"
   }
 }

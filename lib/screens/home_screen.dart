@@ -15,6 +15,7 @@ import '../config/auth_config.dart';
 import '../services/auth_service.dart';
 import '../services/geo_ad_service.dart';
 import '../widgets/geo_ad_banner_widget.dart';
+import 'support_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_fonts.dart';
 
@@ -34,6 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
       AdService.instance.preloadInterstitial();
       AuthService.instance.checkBanStatus();
       GeoAdService.instance.refreshNearbyAds();
+      AuthConfig.syncFromBackend().then((_) {
+        if (mounted) setState(() {});
+      });
     });
   }
 
@@ -359,6 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
+                            _buildHomeSupportCard(context),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -557,6 +562,123 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHomeSupportCard(BuildContext context) {
+    if (!AuthConfig.isContributionsEnabled) return const SizedBox.shrink();
+    final isDark = AppTheme.isDark(context);
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8, bottom: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.08 : 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.45 : 0.3),
+            width: 1.3,
+          ),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF261D0F), const Color(0xFF13251A)]
+                  : [const Color(0xFFFFFBEB), const Color(0xFFF0FDF4)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: InkWell(
+            onTap: () {
+              SupportScreen.push(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      IconlyBold.heart,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Soutenir Allo Halal',
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.getTextPrimary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AuthConfig.humanitarianCharityShare.isNotEmpty
+                              ? AuthConfig.humanitarianCharityShare
+                              : '20% Redistribué à des œuvres caritatives',
+                          style: AppFonts.secondary(
+                            context,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF10B981),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Contribuer',
+                      style: AppFonts.primary(
+                        context,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

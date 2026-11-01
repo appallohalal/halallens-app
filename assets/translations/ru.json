@@ -80,7 +80,9 @@
     "scan_label_ai": "Сфотографировать состав (ИИ)",
     "scan_label_ai_desc": "Сделайте фото списка ингредиентов на упаковке",
     "manual_input_ingredients": "Ввести состав вручную",
-    "manual_input_ingredients_desc": "Напечатайте или вставьте текст с упаковки"
+    "manual_input_ingredients_desc": "Напечатайте или вставьте текст с упаковки",
+    "analyzing_image_label": "Анализ изображения...",
+    "analyzing_image_Label": "Анализ изображения..."
   },
   "history": {
     "title": "История сканирования",
@@ -108,6 +110,8 @@
     "history_desc": "Отсканированные продукты",
     "saved_title": "Сохраненные",
     "saved_desc": "Любимые продукты",
+    "nearby_businesses_title": "Магазины и объявления поблизости",
+    "nearby_businesses_desc": "Откройте для себя магазины-партнеры и предложения рядом с вами",
     "language_title": "Язык",
     "theme_title": "Тема",
     "theme_desc": "Выберите светлый или темный режим.",
@@ -215,7 +219,7 @@
     "default_ban_reason": "Нарушение правил сообщества или условий обслуживания",
     "recheck_status": "Повторно проверить статус",
     "logout_or_switch": "Выйти / Сменить аккаунт",
-    "terms_content": "Bienvenue sur Allo Halal. En créant un compte, vous acceptez les présentes Conditions d'utilisation.\n\n1. Objectif et vérification :\nAllo Halal aide les consommateurs à analyser les ingrédients des produits et à identifier les additifs halal, haram ou douteux. Bien que notre base de données et nos modèles d'IA soient continuellement mis à jour, les consommateurs doivent vérifier auprès des organismes de certification halal agréés en cas de doute.\n\n2. Responsabilité du compte :\nVous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les actions effectuées sous votre compte.\n\n3. Intégrité de la communauté :\nLes utilisateurs s'engagent à utiliser le service de manière appropriée et honnête.\n\nMerci de faire partie de la communauté Allo Halal.",
+    "terms_content": "Добро пожаловать в Allo Halal. Создавая аккаунт, вы соглашаетесь с настоящими Условиями использования.\n\n1. Цель и верификация:\nAllo Halal помогает потребителям анализировать состав продуктов и выявлять халяльные, харамные или сомнительные добавки. Хотя наша база данных и модели ИИ регулярно обновляются, в случае сомнений рекомендуется сверяться с признанными центрами сертификации халяль.\n\n2. Ответственность за аккаунт:\nВы несете ответственность за сохранность своих учетных данных и за любые действия, совершаемые под вашей учетной записью.\n\n3. Честность сообщества:\nПользователи обязуются использовать сервис добросовестно и без злоупотреблений.\n\nСпасибо, что являетесь частью сообщества Allo Halal.",
     "and": "и",
     "register_success": "Аккаунт создан! Приветственное письмо отправлено.",
     "checking": "Проверка...",
@@ -238,5 +242,23 @@
     "tier_server": "🌱 Помочь с расходами на серверы ИИ",
     "tier_growth": "🌟 Ускорить развитие приложения",
     "tier_patron": "👑 Стать официальным меценатом проекта"
+  },
+  "directory": {
+    "title": "Магазины и объявления поблизости",
+    "all": "Все",
+    "butcher": "Мясные лавки",
+    "restaurant": "Рестораны",
+    "grocery": "Продукты",
+    "bakery": "Пекарни",
+    "search_hint": "Поиск магазина, ресторана, города...",
+    "directions": "Маршрут",
+    "visit_offer": "Посмотреть акцию",
+    "verified_partner": "ПРОВЕРЕННЫЙ ПАРТНЕР",
+    "no_results": "Магазины не найдены",
+    "no_results_desc": "Попробуйте изменить поиск или обновить.",
+    "refresh": "Обновить",
+    "gps_disabled": "Включите GPS, чтобы найти магазины рядом с вами.",
+    "gps_denied": "Предоставьте доступ к геолокации для расчета расстояния.",
+    "activate": "Включить"
   }
 }

@@ -56,43 +56,44 @@ class ApiService {
     final primaryBarcode = candidates.first;
 
     // 1. Check Supabase `products` table directly first using candidates
-    try {
-      final inFilter = candidates.map((c) => '"$c"').join(',');
-      final sbUri = Uri.parse(
-        '${AppConfig.supabaseUrl}/rest/v1/products?barcode=in.($inFilter)&select=*&limit=1',
-      );
-      final sbRes = await http
-          .get(
-            sbUri,
-            headers: {
-              'apikey': AppConfig.supabaseAnonKey,
-              'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
-            },
-          )
-          .timeout(const Duration(seconds: 4));
+    for (final candidate in candidates) {
+      try {
+        final sbUri = Uri.parse(
+          '${AppConfig.supabaseUrl}/rest/v1/products?barcode=eq.${Uri.encodeComponent(candidate)}&select=*&limit=1',
+        );
+        final sbRes = await http
+            .get(
+              sbUri,
+              headers: {
+                'apikey': AppConfig.supabaseAnonKey,
+                'Authorization': 'Bearer ${AppConfig.supabaseAnonKey}',
+              },
+            )
+            .timeout(const Duration(seconds: 4));
 
-      if (sbRes.statusCode == 200) {
-        final rows = json.decode(sbRes.body) as List<dynamic>;
-        if (rows.isNotEmpty) {
-          final p = rows.first as Map<String, dynamic>;
-          final additives = (p['detected_additives'] as List<dynamic>?)
-                  ?.map((e) => e.toString())
-                  .toList() ??
-              [];
-          final status = (p['manual_status'] ?? p['ai_status'])?.toString();
-          return Product(
-            barcode: p['barcode']?.toString() ?? primaryBarcode,
-            name: p['name']?.toString() ?? 'general.unknown_product'.tr(),
-            ingredients: p['ingredients_raw']?.toString() ?? '',
-            additives: additives,
-            brands: p['brand']?.toString(),
-            imageUrl: p['image_url']?.toString(),
-            manualStatus: status,
-            moderatorNote: p['moderator_note']?.toString(),
-          );
+        if (sbRes.statusCode == 200) {
+          final rows = json.decode(sbRes.body) as List<dynamic>;
+          if (rows.isNotEmpty) {
+            final p = rows.first as Map<String, dynamic>;
+            final additives = (p['detected_additives'] as List<dynamic>?)
+                    ?.map((e) => e.toString())
+                    .toList() ??
+                [];
+            final status = (p['manual_status'] ?? p['ai_status'])?.toString();
+            return Product(
+              barcode: p['barcode']?.toString() ?? candidate,
+              name: p['name']?.toString() ?? 'general.unknown_product'.tr(),
+              ingredients: p['ingredients_raw']?.toString() ?? '',
+              additives: additives,
+              brands: p['brand']?.toString(),
+              imageUrl: p['image_url']?.toString(),
+              manualStatus: status,
+              moderatorNote: p['moderator_note']?.toString(),
+            );
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
 
     // 2. Fallback: Check Admin backend `/scan` endpoint
     try {

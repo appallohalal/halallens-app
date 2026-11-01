@@ -80,7 +80,9 @@
     "scan_label_ai": "Scansiona etichetta ingredienti (IA)",
     "scan_label_ai_desc": "Scatta una foto della lista ingredienti",
     "manual_input_ingredients": "Inserisci ingredienti manualmente",
-    "manual_input_ingredients_desc": "Digita o incolla il testo dalla confezione"
+    "manual_input_ingredients_desc": "Digita o incolla il testo dalla confezione",
+    "analyzing_image_label": "Analisi immagine in corso...",
+    "analyzing_image_Label": "Analisi immagine in corso..."
   },
   "history": {
     "title": "Cronologia",
@@ -108,6 +110,8 @@
     "history_desc": "Prodotti scansionati",
     "saved_title": "Salvati",
     "saved_desc": "Accesso rapido",
+    "nearby_businesses_title": "Negozi e Annunci Vicini",
+    "nearby_businesses_desc": "Scopri negozi e offerte partner intorno a te",
     "language_title": "Lingua",
     "theme_title": "Tema",
     "theme_desc": "Scegli tra modalità chiara o scura.",
@@ -215,7 +219,7 @@
     "default_ban_reason": "Violazione delle linee guida della community o dei termini di servizio",
     "recheck_status": "Ricontrolla stato",
     "logout_or_switch": "Disconnetti / Cambia account",
-    "terms_content": "Bienvenue sur Allo Halal. En créant un compte, vous acceptez les présentes Conditions d'utilisation.\n\n1. Objectif et vérification :\nAllo Halal aide les consommateurs à analyser les ingrédients des produits et à identifier les additifs halal, haram ou douteux. Bien que notre base de données et nos modèles d'IA soient continuellement mis à jour, les consommateurs doivent vérifier auprès des organismes de certification halal agréés en cas de doute.\n\n2. Responsabilité du compte :\nVous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les actions effectuées sous votre compte.\n\n3. Intégrité de la communauté :\nLes utilisateurs s'engagent à utiliser le service de manière appropriée et honnête.\n\nMerci de faire partie de la communauté Allo Halal.",
+    "terms_content": "Benvenuto su Allo Halal. Creando un account, accetti questi Termini di servizio.\n\n1. Scopo e verifica:\nAllo Halal aiuta i consumatori ad analizzare gli ingredienti dei prodotti e a identificare additivi halal, haram o dubbi. Sebbene il nostro database e i modelli di intelligenza artificiale vengano costantemente aggiornati, in caso di dubbio si consiglia di verificare con enti di certificazione halal riconosciuti.\n\n2. Responsabilità dell'account:\nSei responsabile della riservatezza delle tue credenziali di accesso e di tutte le attività svolte tramite il tuo account.\n\n3. Integrità della comunità:\nGli utenti si impegnano a utilizzare il servizio in modo corretto e leale.\n\nGrazie per far parte della comunità di Allo Halal.",
     "and": "e",
     "register_success": "Account creato! È stata inviata un'email di benvenuto.",
     "checking": "Verifica in corso...",
@@ -238,5 +242,23 @@
     "tier_server": "🌱 Aiuta con i costi dei server IA",
     "tier_growth": "🌟 Accelera lo sviluppo dell'app",
     "tier_patron": "👑 Diventa un Sostenitore ufficiale"
+  },
+  "directory": {
+    "title": "Negozi e Annunci Vicini",
+    "all": "Tutti",
+    "butcher": "Macellerie",
+    "restaurant": "Ristoranti",
+    "grocery": "Alimentari",
+    "bakery": "Panetterie",
+    "search_hint": "Cerca negozio, ristorante, città...",
+    "directions": "Indicazioni",
+    "visit_offer": "Vedi offerta",
+    "verified_partner": "PARTNER VERIFICATO",
+    "no_results": "Nessun negozio trovato",
+    "no_results_desc": "Prova a modificare la ricerca o aggiornare.",
+    "refresh": "Aggiorna",
+    "gps_disabled": "Attiva il GPS per scoprire i negozi intorno a te.",
+    "gps_denied": "Concedi l'autorizzazione alla posizione per calcolare le distanze esatte.",
+    "activate": "Attiva"
   }
 }

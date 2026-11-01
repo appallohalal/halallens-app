@@ -42,7 +42,8 @@ class NotificationService {
 
     try {
       if (Firebase.apps.isEmpty) {
-        if (NotificationConfig.isConfigured) {
+        if (defaultTargetPlatform == TargetPlatform.android &&
+            NotificationConfig.isConfigured) {
           await Firebase.initializeApp(
             options: FirebaseOptions(
               apiKey: NotificationConfig.firebaseApiKey,
@@ -52,38 +53,42 @@ class NotificationService {
             ),
           );
         } else {
-          // Use DefaultFirebaseOptions from google-services.json / GoogleService-Info.plist
+          // Use DefaultFirebaseOptions (safely selects iOS or Android configuration)
           await Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform,
           );
         }
       }
 
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        FirebaseMessaging.onBackgroundMessage(
+            _firebaseMessagingBackgroundHandler);
+      }
 
       // Apply global feature toggle from the Admin panel
       await applyGlobalToggle();
 
       // Show foreground notifications on iOS
-      await FirebaseMessaging.instance
-          .setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+      try {
+        await FirebaseMessaging.instance
+            .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      } catch (_) {}
 
-      // Show native OS system notification when app is open on Android
-      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      // Listen for incoming messages safely
+      try {
+        FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+        FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap);
 
-      // Handle notification tap when app is in background
-      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageTap);
-
-      // Handle notification tap when app was terminated
-      final initialMessage =
-          await FirebaseMessaging.instance.getInitialMessage();
-      if (initialMessage != null) {
-        _handleMessageTap(initialMessage);
-      }
+        final initialMessage =
+            await FirebaseMessaging.instance.getInitialMessage();
+        if (initialMessage != null) {
+          _handleMessageTap(initialMessage);
+        }
+      } catch (_) {}
 
       _isInitialized = true;
     } catch (e) {

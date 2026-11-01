@@ -1,13 +1,14 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_config.dart';
 
-/// Purely server-driven AdMob configuration for Android.
+/// Purely server-driven AdMob configuration for Android and iOS.
 /// No hardcoded ad unit IDs in the app — whatever ID is returned from the server
-/// (Test ID or Production ID) is used directly.
+/// (Test ID or Production ID) is used directly based on the platform.
 class AdConfig {
   AdConfig._();
 
@@ -105,8 +106,9 @@ class AdConfig {
     // 3. Fallback: Admin backend API
     if (!synced) {
       try {
+        final platformParam = (!kIsWeb && Platform.isIOS) ? 'ios' : 'android';
         final uri =
-            Uri.parse('${AppConfig.backendBaseUrl}/admob?platform=android');
+            Uri.parse('${AppConfig.backendBaseUrl}/admob?platform=$platformParam');
         final response =
             await http.get(uri).timeout(const Duration(seconds: 2));
 
@@ -131,7 +133,9 @@ class AdConfig {
         if (data is Map<String, dynamic>) {
           if (data.containsKey('bannerId') || data.containsKey('activeIds')) {
             _applyRemoteConfig(data);
-          } else if (data.containsKey('android_banner_id')) {
+          } else if (data.containsKey('android_banner_id') ||
+              data.containsKey('banner_id_android') ||
+              data.containsKey('ads_enabled')) {
             _applySupabaseRow(data);
           }
         }
@@ -215,43 +219,93 @@ class AdConfig {
       return;
     }
 
-    final androidAppId = row['android_app_id'] as String?;
-    final testAndroidAppId = row['test_android_app_id'] as String?;
-    _appId = (androidAppId != null && androidAppId.isNotEmpty)
-        ? androidAppId
-        : (testAndroidAppId ?? '');
+    final isIOS = !kIsWeb && Platform.isIOS;
 
-    final androidBannerId = row['android_banner_id'] as String?;
-    final testAndroidBannerId = row['test_android_banner_id'] as String?;
-    _bannerId = (androidBannerId != null && androidBannerId.isNotEmpty)
-        ? androidBannerId
-        : (testAndroidBannerId ?? '');
+    if (isIOS) {
+      // 1. iOS Unit IDs
+      final iosAppId = row['ios_app_id'] as String?;
+      final testIosAppId = row['test_ios_app_id'] as String?;
+      _appId = (iosAppId != null && iosAppId.isNotEmpty)
+          ? iosAppId
+          : (testIosAppId ?? '');
 
-    final androidInterstitialId = row['android_interstitial_id'] as String?;
-    final testAndroidInterstitialId =
-        row['test_android_interstitial_id'] as String?;
-    _interstitialId =
-        (androidInterstitialId != null && androidInterstitialId.isNotEmpty)
-            ? androidInterstitialId
-            : (testAndroidInterstitialId ?? '');
+      final iosBannerId =
+          (row['ios_banner_id'] ?? row['banner_id_ios']) as String?;
+      final testIosBannerId = row['test_ios_banner_id'] as String?;
+      _bannerId = (iosBannerId != null && iosBannerId.isNotEmpty)
+          ? iosBannerId
+          : (testIosBannerId ?? '');
 
-    final androidAppOpenId = row['android_app_open_id'] as String?;
-    final testAndroidAppOpenId = row['test_android_app_open_id'] as String?;
-    _appOpenId = (androidAppOpenId != null && androidAppOpenId.isNotEmpty)
-        ? androidAppOpenId
-        : (testAndroidAppOpenId ?? '');
+      final iosInterstitialId = (row['ios_interstitial_id'] ??
+          row['interstitial_id_ios']) as String?;
+      final testIosInterstitialId =
+          row['test_ios_interstitial_id'] as String?;
+      _interstitialId =
+          (iosInterstitialId != null && iosInterstitialId.isNotEmpty)
+              ? iosInterstitialId
+              : (testIosInterstitialId ?? '');
 
-    final androidNativeId = row['android_native_id'] as String?;
-    final testAndroidNativeId = row['test_android_native_id'] as String?;
-    _nativeId = (androidNativeId != null && androidNativeId.isNotEmpty)
-        ? androidNativeId
-        : (testAndroidNativeId ?? '');
+      final iosAppOpenId = row['ios_app_open_id'] as String?;
+      final testIosAppOpenId = row['test_ios_app_open_id'] as String?;
+      _appOpenId = (iosAppOpenId != null && iosAppOpenId.isNotEmpty)
+          ? iosAppOpenId
+          : (testIosAppOpenId ?? '');
 
-    final androidRewardedId = row['android_rewarded_id'] as String?;
-    final testAndroidRewardedId = row['test_android_rewarded_id'] as String?;
-    _rewardedId = (androidRewardedId != null && androidRewardedId.isNotEmpty)
-        ? androidRewardedId
-        : (testAndroidRewardedId ?? '');
+      final iosNativeId = row['ios_native_id'] as String?;
+      final testIosNativeId = row['test_ios_native_id'] as String?;
+      _nativeId = (iosNativeId != null && iosNativeId.isNotEmpty)
+          ? iosNativeId
+          : (testIosNativeId ?? '');
+
+      final iosRewardedId =
+          (row['ios_rewarded_id'] ?? row['rewarded_id_ios']) as String?;
+      final testIosRewardedId = row['test_ios_rewarded_id'] as String?;
+      _rewardedId = (iosRewardedId != null && iosRewardedId.isNotEmpty)
+          ? iosRewardedId
+          : (testIosRewardedId ?? '');
+    } else {
+      // 2. Android Unit IDs
+      final androidAppId = row['android_app_id'] as String?;
+      final testAndroidAppId = row['test_android_app_id'] as String?;
+      _appId = (androidAppId != null && androidAppId.isNotEmpty)
+          ? androidAppId
+          : (testAndroidAppId ?? '');
+
+      final androidBannerId =
+          (row['android_banner_id'] ?? row['banner_id_android']) as String?;
+      final testAndroidBannerId = row['test_android_banner_id'] as String?;
+      _bannerId = (androidBannerId != null && androidBannerId.isNotEmpty)
+          ? androidBannerId
+          : (testAndroidBannerId ?? '');
+
+      final androidInterstitialId = (row['android_interstitial_id'] ??
+          row['interstitial_id_android']) as String?;
+      final testAndroidInterstitialId =
+          row['test_android_interstitial_id'] as String?;
+      _interstitialId =
+          (androidInterstitialId != null && androidInterstitialId.isNotEmpty)
+              ? androidInterstitialId
+              : (testAndroidInterstitialId ?? '');
+
+      final androidAppOpenId = row['android_app_open_id'] as String?;
+      final testAndroidAppOpenId = row['test_android_app_open_id'] as String?;
+      _appOpenId = (androidAppOpenId != null && androidAppOpenId.isNotEmpty)
+          ? androidAppOpenId
+          : (testAndroidAppOpenId ?? '');
+
+      final androidNativeId = row['android_native_id'] as String?;
+      final testAndroidNativeId = row['test_android_native_id'] as String?;
+      _nativeId = (androidNativeId != null && androidNativeId.isNotEmpty)
+          ? androidNativeId
+          : (testAndroidNativeId ?? '');
+
+      final androidRewardedId =
+          (row['android_rewarded_id'] ?? row['rewarded_id_android']) as String?;
+      final testAndroidRewardedId = row['test_android_rewarded_id'] as String?;
+      _rewardedId = (androidRewardedId != null && androidRewardedId.isNotEmpty)
+          ? androidRewardedId
+          : (testAndroidRewardedId ?? '');
+    }
 
     _bannerEnabled = row['banner_enabled'] != false;
     _interstitialEnabled = row['interstitial_enabled'] != false;
@@ -259,8 +313,10 @@ class AdConfig {
     _nativeEnabled = row['native_enabled'] != false;
     _rewardedEnabled = row['rewarded_enabled'] == true;
 
-    _interstitialIntervalScans =
-        (row['interstitial_interval_scans'] as num?)?.toInt() ?? 3;
+    _interstitialIntervalScans = ((row['interstitial_interval_scans'] ??
+            row['interstitial_frequency']) as num?)
+        ?.toInt() ??
+        3;
     _appOpenCooldownMinutes =
         (row['app_open_cooldown_minutes'] as num?)?.toInt() ?? 15;
     _bannerRefreshRateSeconds =

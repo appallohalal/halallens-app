@@ -203,8 +203,14 @@ class CmsAssetLoader extends AssetLoader {
 
   @override
   Future<Map<String, dynamic>> load(String path, Locale locale) async {
-    final fullPath = '$path/${locale.languageCode}.json';
-    final jsonString = await rootBundle.loadString(fullPath);
+    String jsonString;
+    try {
+      jsonString =
+          await rootBundle.loadString('$path/${locale.languageCode}.json');
+    } catch (_) {
+      // Safe fallback to French (fr.json) if requested locale file does not exist
+      jsonString = await rootBundle.loadString('$path/fr.json');
+    }
     final Map<String, dynamic> baseMap =
         Map<String, dynamic>.from(jsonDecode(jsonString) as Map);
 

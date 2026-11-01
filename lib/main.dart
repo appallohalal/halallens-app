@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -28,6 +29,17 @@ Future<void> main() async {
   final themeService = ThemeService();
   await CmsConfig.loadCachedOnly();
   await Hive.initFlutter();
+
+  // Sanitize saved locale in SharedPreferences to prevent loading deleted locale assets
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('locale');
+    const supported = ['fr', 'en', 'ar', 'es', 'it', 'de', 'pt', 'tr', 'ru'];
+    if (saved != null && !supported.contains(saved.split('_')[0])) {
+      await prefs.setString('locale', 'fr');
+    }
+  } catch (_) {}
+
   await Future.wait([
     EasyLocalization.ensureInitialized(),
     HistoryService.init(),
@@ -81,15 +93,18 @@ Future<void> main() async {
 
 Future<void> _initBackgroundServices() async {
   try {
-    await Future.wait([
-      GroqConfig.syncFromBackend(),
-      AdService.initialize(),
-      NotificationConfig.syncFromBackend().then((_) async {
-        await NotificationService.instance.init();
-        await NotificationService.instance
-            .syncUserTags(AuthService.instance.currentUser);
-      }),
-    ]);
+    await GroqConfig.syncFromBackend();
+  } catch (_) {}
+
+  try {
+    await AdService.initialize();
+  } catch (_) {}
+
+  try {
+    await NotificationConfig.syncFromBackend();
+    await NotificationService.instance.init();
+    await NotificationService.instance
+        .syncUserTags(AuthService.instance.currentUser);
   } catch (_) {}
 }
 

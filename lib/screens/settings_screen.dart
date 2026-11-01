@@ -3,6 +3,8 @@ import 'package:iconly/iconly.dart';
 import '../theme/app_theme.dart';
 import 'history_screen.dart';
 import 'saved_products_screen.dart';
+import 'nearby_businesses_screen.dart';
+import 'support_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_fonts.dart';
 import 'static_page_screen.dart';
@@ -14,7 +16,6 @@ import 'auth_screen.dart';
 import 'edit_profile_screen.dart';
 import '../config/cms_config.dart';
 import '../config/auth_config.dart';
-import '../widgets/support_dialog.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -69,6 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSupportBanner(context),
               const SizedBox(height: 16),
               _buildSectionTitle('settings.sections.features'.tr()),
+              _buildNearbyBusinessesBanner(context),
               _buildSettingsTile(
                 icon: IconlyLight.time_circle,
                 title: 'settings.history_title'.tr(),
@@ -496,17 +498,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            isLoggedIn
-                                ? '${user?.email ?? ''}${user?.city.isNotEmpty == true ? ' • ${user!.city}, ${user.country}' : ''}'
-                                : 'settings.guest_subtitle'.tr(),
-                            style: AppFonts.primary(
-                              context,
-                              color: AppTheme.getTextSecondary(context),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                          if (isLoggedIn) ...[
+                            if (user?.email.isNotEmpty == true)
+                              Text(
+                                user!.email,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppFonts.primary(
+                                  context,
+                                  color: AppTheme.getTextSecondary(context),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            if (user?.city.isNotEmpty == true)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 1.5),
+                                child: Text(
+                                  '${user!.city}${user.country.isNotEmpty == true ? ', ${user.country}' : ''}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppFonts.primary(
+                                    context,
+                                    color: AppTheme.getTextSecondary(context).withValues(alpha: 0.8),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                          ] else ...[
+                            Text(
+                              'settings.guest_subtitle'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: AppTheme.getTextSecondary(context),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -528,16 +558,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          icon: const Icon(IconlyLight.edit, size: 15),
-                          label: Text(
-                            'settings.edit_profile'.tr(),
-                            style: AppFonts.primary(
-                              context,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                          icon: const Icon(IconlyLight.edit, size: 14),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'settings.edit_profile'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.primaryBlue,
@@ -545,8 +577,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               color: AppTheme.primaryBlue.withValues(alpha: 0.35),
                             ),
                             padding: const EdgeInsets.symmetric(
-                              vertical: 9,
-                              horizontal: 8,
+                              vertical: 8,
+                              horizontal: 6,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -562,24 +594,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(
                             IconlyLight.delete,
-                            size: 15,
+                            size: 14,
                             color: Colors.redAccent,
                           ),
-                          label: Text(
-                            'settings.delete_account'.tr(),
-                            style: AppFonts.primary(
-                              context,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.redAccent,
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'settings.delete_account'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.redAccent,
+                              ),
+                              maxLines: 1,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.redAccent,
@@ -587,8 +621,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               color: Colors.redAccent.withValues(alpha: 0.35),
                             ),
                             padding: const EdgeInsets.symmetric(
-                              vertical: 9,
-                              horizontal: 8,
+                              vertical: 8,
+                              horizontal: 6,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -684,7 +718,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           child: InkWell(
             onTap: () {
-              SupportDialog.show(context);
+              SupportScreen.push(context);
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
@@ -726,23 +760,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Flexible(
+                                Expanded(
                                   child: Text(
                                     'settings.support_project_title'.tr(),
                                     style: AppFonts.primary(
                                       context,
                                       color: AppTheme.getTextPrimary(context),
-                                      fontSize: 16.5,
+                                      fontSize: 15.5,
                                       fontWeight: FontWeight.w800,
                                     ),
-                                    maxLines: 1,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.25 : 0.16),
                                     borderRadius: BorderRadius.circular(20),
@@ -755,7 +790,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     '★ Prix libre',
                                     style: TextStyle(
                                       color: Color(0xFFD97706),
-                                      fontSize: 10.5,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -768,10 +803,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               style: AppFonts.primary(
                                 context,
                                 color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563),
-                                fontSize: 13,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w500,
                               ),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
@@ -799,31 +834,269 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // Bottom Highlights Pill Row giving grand height and visual richness
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF088839).withValues(alpha: isDark ? 0.2 : 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF088839).withValues(alpha: 0.3),
-                            width: 0.8,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF088839).withValues(alpha: isDark ? 0.2 : 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF088839).withValues(alpha: 0.3),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(IconlyBold.shield_done, color: Color(0xFF088839), size: 13),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'support.no_commitment'.tr(),
+                                    style: AppFonts.primary(
+                                      context,
+                                      color: const Color(0xFF088839),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(IconlyBold.shield_done, color: Color(0xFF088839), size: 13),
-                            const SizedBox(width: 5),
-                            Text(
-                              'support.no_commitment'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                color: const Color(0xFF088839),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNearbyBusinessesBanner(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+
+    // Eye-catching, spacious hero block mirroring support banner with soft pastel green inverted palette
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF088839).withValues(alpha: isDark ? 0.08 : 0.12),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: const Color(0xFF088839).withValues(alpha: isDark ? 0.5 : 0.35),
+            width: 1.4,
+          ),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF13251A), const Color(0xFF261D0F)]
+                  : [const Color(0xFFF0FDF4), const Color(0xFFFFFBEB)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NearbyBusinessesScreen(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      // Emerald & Halal Green Gradient Icon Box (Spacious 52x52)
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF088839)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF088839).withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
                             ),
                           ],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            IconlyBold.location,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'settings.nearby_businesses_title'.tr(),
+                                    style: AppFonts.primary(
+                                      context,
+                                      color: AppTheme.getTextPrimary(context),
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 2.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF088839).withValues(
+                                      alpha: isDark ? 0.25 : 0.16,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: const Color(0xFF088839).withValues(
+                                        alpha: 0.4,
+                                      ),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '★ Proximité',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? const Color(0xFF34D399)
+                                          : const Color(0xFF088839),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'settings.nearby_businesses_desc'.tr(),
+                              style: AppFonts.primary(
+                                context,
+                                color: isDark
+                                    ? const Color(0xFF9CA3AF)
+                                    : const Color(0xFF4B5563),
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF088839).withValues(
+                            alpha: isDark ? 0.22 : 0.12,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            IconlyLight.arrow_right_2,
+                            color: isDark
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFF088839),
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // Bottom Highlights Pill Row in warm inverted amber/gold
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withValues(
+                              alpha: isDark ? 0.2 : 0.1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFF59E0B).withValues(
+                                alpha: 0.35,
+                              ),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                IconlyBold.discovery,
+                                color: Color(0xFFD97706),
+                                size: 13,
+                              ),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  'directory.verified_partner'.tr(),
+                                  style: AppFonts.primary(
+                                    context,
+                                    color: const Color(0xFFD97706),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -64,15 +64,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    // Reload localization delegate in-place if CMS texts were updated from backend
-    if (CmsConfig.texts.isNotEmpty) {
-      try {
-        await context.setLocale(context.locale);
-      } catch (_) {}
-    }
-
-    if (!mounted) return;
-
     if (AuthService.instance.isBanned) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const BannedScreen()),

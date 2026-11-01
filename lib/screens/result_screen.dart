@@ -518,7 +518,73 @@ class ResultScreen extends StatelessWidget {
             status: result.overallStatus,
             subtitle: _getStatusSubtitle(result),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
+
+          // Moderator Verification Note Banner (if verified by Admin team)
+          if (product.moderatorNote != null && product.moderatorNote!.trim().isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.isDark(context)
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      IconlyBold.shield_done,
+                      color: Color(0xFF3B82F6),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Vérification Officielle Allo Halal',
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.isDark(context)
+                                ? const Color(0xFF93C5FD)
+                                : const Color(0xFF1D4ED8),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          product.moderatorNote!.trim(),
+                          style: AppFonts.secondary(
+                            context,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.getTextPrimary(context),
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
 
           // Product info card
           GlassCard(

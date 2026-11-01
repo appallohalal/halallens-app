@@ -372,7 +372,7 @@ class ScannerProvider extends ChangeNotifier {
       _product = Product(
         barcode: barcode ?? '',
         name: 'general.scanned_image'.tr(),
-        ingredients: 'result.analyzing_image_Label'.tr(),
+        ingredients: 'result.analyzing_image_label'.tr(),
         additives: [],
         parsedIngredients: [],
       );

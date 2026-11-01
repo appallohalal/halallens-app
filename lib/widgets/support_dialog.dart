@@ -1,34 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/auth_config.dart';
-import '../services/stripe_service.dart';
+import '../screens/paddle_checkout_screen.dart';
+import '../screens/support_screen.dart';
+import '../services/auth_service.dart';
+import '../services/paddle_service.dart';
 import '../theme/app_fonts.dart';
 import '../theme/app_theme.dart';
-import 'stripe_payment_sheet.dart';
 
 /// Free-will contribution model ("Prix libre") displayed in an elegant Bottom Sheet.
-/// Features a draggable handle, smooth scrolling, and in-app Stripe Checkout bottom sheet presentation.
+/// Features a draggable handle, smooth scrolling, and in-app Paddle Checkout bottom sheet presentation.
 class SupportDialog extends StatefulWidget {
   const SupportDialog({super.key});
 
-  /// Displays the Support Dialog as a non-overflowing Modal Bottom Sheet.
+  /// Forwards directly to the dedicated full SupportScreen.
   static Future<void> show(BuildContext context) {
-    if (!AuthConfig.isContributionsEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Contributions are currently disabled.'),
-        ),
-      );
-      return Future.value();
-    }
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const SupportDialog(),
-    );
+    return SupportScreen.push(context);
   }
 
   @override
@@ -42,7 +32,21 @@ class _SupportDialogState extends State<SupportDialog> {
   @override
   void initState() {
     super.initState();
-    _contributionAmount = AuthConfig.defaultContributionAmount;
+    _contributionAmount = AuthConfig.defaultContributionAmount.clamp(
+      AuthConfig.minContributionAmount,
+      AuthConfig.maxContributionAmount,
+    );
+    // Refresh live configuration from Supabase immediately on open
+    AuthConfig.syncFromBackend().then((_) {
+      if (mounted) {
+        setState(() {
+          _contributionAmount = AuthConfig.defaultContributionAmount.clamp(
+            AuthConfig.minContributionAmount,
+            AuthConfig.maxContributionAmount,
+          );
+        });
+      }
+    });
   }
 
   String _getTierDescription(double amount) {
@@ -60,7 +64,7 @@ class _SupportDialogState extends State<SupportDialog> {
   Future<void> _handleContribution() async {
     if (_isProcessing) return;
 
-    if (!AuthConfig.isStripeEnabled) {
+    if (!AuthConfig.isPaddleEnabled) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -99,9 +103,17 @@ class _SupportDialogState extends State<SupportDialog> {
                   ? 'GROWTH'
                   : 'PATRON';
 
-      final sessionResult = await StripeService.instance.createStripeSession(
+      final user = AuthService.instance.currentUser;
+      final donorEmail = user?.email.trim() ?? '';
+      final donorName = (user?.name.trim().isNotEmpty == true)
+          ? user!.name.trim()
+          : (user?.username.trim().isNotEmpty == true ? user!.username.trim() : '');
+
+      final sessionResult = await PaddleService.instance.createPaddleSession(
         amount: _contributionAmount,
         tier: tierName,
+        donorName: donorName.isNotEmpty ? donorName : null,
+        donorEmail: donorEmail.isNotEmpty ? donorEmail : null,
         message: 'Community Contribution via Allo Halal App',
       );
 
@@ -122,19 +134,22 @@ class _SupportDialogState extends State<SupportDialog> {
         return;
       }
 
-      // Open the Stripe payment gateway directly inside an in-app Bottom Sheet
-      final paid = await StripePaymentSheet.show(
+      // Open the Paddle payment gateway on a dedicated full screen
+      final paid = await PaddleCheckoutScreen.push(
         context,
         checkoutUrl: sessionResult.url!,
-        sessionId: sessionResult.sessionId,
+        transactionId: sessionResult.transactionId,
         amount: _contributionAmount,
+        tier: tierName,
+        userEmail: donorEmail.isNotEmpty ? donorEmail : null,
+        userName: donorName.isNotEmpty ? donorName : null,
       );
 
       if (!mounted) return;
 
       if (paid == true) {
-        if (sessionResult.sessionId != null) {
-          StripeService.instance.syncCompletedSession(sessionResult.sessionId!);
+        if (sessionResult.transactionId != null) {
+          PaddleService.instance.syncCompletedTransaction(sessionResult.transactionId!);
         }
         Navigator.pop(context); // Close the support selection bottom sheet
         ScaffoldMessenger.of(context).showSnackBar(
@@ -265,7 +280,9 @@ class _SupportDialogState extends State<SupportDialog> {
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            'support.title'.tr(),
+                                            AuthConfig.contributionTitle.isNotEmpty
+                                                ? AuthConfig.contributionTitle
+                                                : 'support.title'.tr(),
                                             style: AppFonts.primary(
                                               context,
                                               fontSize: 16,
@@ -298,7 +315,9 @@ class _SupportDialogState extends State<SupportDialog> {
                                     ),
                                     const SizedBox(height: 3),
                                     Text(
-                                      'support.no_commitment'.tr(),
+                                      AuthConfig.contributionSubtitle.isNotEmpty
+                                          ? AuthConfig.contributionSubtitle
+                                          : 'support.no_commitment'.tr(),
                                       style: AppFonts.primary(
                                         context,
                                         fontSize: 11.5,
@@ -313,7 +332,9 @@ class _SupportDialogState extends State<SupportDialog> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'support.desc'.tr(),
+                            AuthConfig.contributionDesc.isNotEmpty
+                                ? AuthConfig.contributionDesc
+                                : 'support.desc'.tr(),
                             style: AppFonts.primary(
                               context,
                               fontSize: 12.5,
@@ -346,10 +367,12 @@ class _SupportDialogState extends State<SupportDialog> {
                       child: Column(
                         children: [
                           Text(
-                            '${_contributionAmount.toInt()} €',
+                            (_contributionAmount == _contributionAmount.roundToDouble())
+                                ? '${_contributionAmount.toInt()} ${AuthConfig.contributionCurrency == 'EUR' ? '€' : AuthConfig.contributionCurrency}'
+                                : '${_contributionAmount.toStringAsFixed(2)} ${AuthConfig.contributionCurrency == 'EUR' ? '€' : AuthConfig.contributionCurrency}',
                             style: AppFonts.primary(
                               context,
-                              fontSize: 44,
+                              fontSize: 42,
                               fontWeight: FontWeight.w900,
                               color: const Color(0xFF088839),
                               letterSpacing: -1,
@@ -398,10 +421,14 @@ class _SupportDialogState extends State<SupportDialog> {
                           AuthConfig.maxContributionAmount,
                         ),
                         min: AuthConfig.minContributionAmount,
-                        max: AuthConfig.maxContributionAmount,
-                        divisions: (AuthConfig.maxContributionAmount - AuthConfig.minContributionAmount)
-                            .toInt()
-                            .clamp(1, 100),
+                        max: AuthConfig.maxContributionAmount > AuthConfig.minContributionAmount
+                            ? AuthConfig.maxContributionAmount
+                            : AuthConfig.minContributionAmount + 1,
+                        divisions: (AuthConfig.maxContributionAmount - AuthConfig.minContributionAmount) > 0
+                            ? (AuthConfig.maxContributionAmount - AuthConfig.minContributionAmount)
+                                .toInt()
+                                .clamp(1, 100)
+                            : 1,
                         onChanged: (val) {
                           setState(() => _contributionAmount = val);
                         },
@@ -409,53 +436,53 @@ class _SupportDialogState extends State<SupportDialog> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Preset Chips
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: AuthConfig.contributionPresets.map((p) {
-                        final isSelected = (_contributionAmount.toInt() == p.toInt());
-                        final currencySymbol = AuthConfig.contributionCurrency == 'EUR'
-                            ? '€'
-                            : AuthConfig.contributionCurrency;
+                    // Preset Chips (Dynamic Wrap)
+                    Center(
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        alignment: WrapAlignment.center,
+                        children: AuthConfig.contributionPresets.map((p) {
+                          final isSelected = ((_contributionAmount - p).abs() < 0.01);
+                          final currencySymbol = AuthConfig.contributionCurrency == 'EUR'
+                              ? '€'
+                              : AuthConfig.contributionCurrency;
+                          final amountText = (p == p.roundToDouble())
+                              ? '${p.toInt()} $currencySymbol'
+                              : '${p.toStringAsFixed(2)} $currencySymbol';
 
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3),
-                            child: InkWell(
-                              onTap: () => setState(() => _contributionAmount = p),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 9),
-                                decoration: BoxDecoration(
+                          return InkWell(
+                            onTap: () => setState(() => _contributionAmount = p),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF088839)
+                                    : AppTheme.getCardColor(context),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
                                   color: isSelected
                                       ? const Color(0xFF088839)
-                                      : AppTheme.getCardColor(context),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFF088839)
-                                        : AppTheme.getBorderColor(context),
-                                    width: isSelected ? 1.5 : 1,
-                                  ),
+                                      : AppTheme.getBorderColor(context),
+                                  width: isSelected ? 1.5 : 1,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    '${p.toInt()} $currencySymbol',
-                                    style: AppFonts.primary(
-                                      context,
-                                      fontSize: 13,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : AppTheme.getTextPrimary(context),
-                                    ),
-                                  ),
+                              ),
+                              child: Text(
+                                amountText,
+                                style: AppFonts.primary(
+                                  context,
+                                  fontSize: 12.5,
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppTheme.getTextPrimary(context),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
 
                     // Humanitarian Commitment & Solidarity Card (if enabled)
@@ -468,13 +495,14 @@ class _SupportDialogState extends State<SupportDialog> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: const Color(0xFF10B981).withValues(alpha: 0.35),
-                            width: 1,
+                            width: 1.2,
                           ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(6),
@@ -485,49 +513,133 @@ class _SupportDialogState extends State<SupportDialog> {
                                   child: const Icon(
                                     IconlyBold.shield_done,
                                     color: Color(0xFF088839),
-                                    size: 16,
+                                    size: 18,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text(
-                                    AuthConfig.humanitarianTitle,
-                                    style: AppFonts.primary(
-                                      context,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.getTextPrimary(context),
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AuthConfig.humanitarianTitle,
+                                        style: AppFonts.primary(
+                                          context,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.getTextPrimary(context),
+                                        ),
+                                      ),
+                                      if (AuthConfig.humanitarianBadge.isNotEmpty) ...[
+                                        const SizedBox(height: 2),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF088839).withValues(alpha: 0.10),
+                                            borderRadius: BorderRadius.circular(5),
+                                          ),
+                                          child: Text(
+                                            AuthConfig.humanitarianBadge,
+                                            style: const TextStyle(
+                                              color: Color(0xFF088839),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    AuthConfig.humanitarianCharityShare,
-                                    style: AppFonts.primary(
-                                      context,
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: const Color(0xFF088839),
+                                if (AuthConfig.humanitarianCharityShare.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      AuthConfig.humanitarianCharityShare,
+                                      style: AppFonts.primary(
+                                        context,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF088839),
+                                      ),
                                     ),
                                   ),
-                                ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              AuthConfig.humanitarianText,
-                              style: AppFonts.primary(
-                                context,
-                                fontSize: 11.5,
-                                height: 1.45,
-                                color: AppTheme.getTextSecondary(context),
+
+                            if (AuthConfig.humanitarianOrganizationName.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  const Icon(IconlyLight.heart, size: 13, color: Color(0xFF088839)),
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: Text(
+                                      AuthConfig.humanitarianOrganizationName,
+                                      style: AppFonts.primary(
+                                        context,
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF088839),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                            ],
+
+                            if (AuthConfig.humanitarianText.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                AuthConfig.humanitarianText,
+                                style: AppFonts.primary(
+                                  context,
+                                  fontSize: 11.5,
+                                  height: 1.45,
+                                  color: AppTheme.getTextSecondary(context),
+                                ),
+                              ),
+                            ],
+
+                            if (AuthConfig.humanitarianLearnMoreUrl.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final uri = Uri.tryParse(AuthConfig.humanitarianLearnMoreUrl);
+                                  if (uri != null && await canLaunchUrl(uri)) {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'En savoir plus',
+                                        style: AppFonts.primary(
+                                          context,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF088839),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 3),
+                                      const Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: 12,
+                                        color: Color(0xFF088839),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -609,7 +721,7 @@ class _SupportDialogState extends State<SupportDialog> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Powered by Stripe • 256-Bit SSL Encrypted',
+                        'Powered by Paddle • 256-Bit SSL Encrypted',
                         style: AppFonts.primary(
                           context,
                           fontSize: 11,

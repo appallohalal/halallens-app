@@ -3,7 +3,6 @@ import 'package:iconly/iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../models/app_user.dart';
 import '../services/auth_service.dart';
 import '../theme/app_fonts.dart';
 import '../theme/app_theme.dart';
@@ -214,10 +213,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           try {
                             final res = await AuthService.instance.deleteAccount();
 
-                            if (!mounted) return;
-                            Navigator.pop(dialogCtx); // close dialog
+                            if (dialogCtx.mounted) {
+                              Navigator.pop(dialogCtx); // close dialog
+                            }
+                            if (!context.mounted) return;
                             Navigator.pop(context); // close edit profile screen
-
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -233,12 +233,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             );
                           } catch (e) {
-                            if (!mounted) return;
-                            Navigator.pop(dialogCtx);
-                            setState(() {
-                              _errorMessage = 'Erreur lors de la suppression: $e';
-                              _isDeleting = false;
-                            });
+                            if (dialogCtx.mounted) {
+                              Navigator.pop(dialogCtx);
+                            }
+                            if (mounted) {
+                              setState(() {
+                                _errorMessage = 'Erreur lors de la suppression: $e';
+                                _isDeleting = false;
+                              });
+                            }
                           }
                         },
                   child: _isDeleting

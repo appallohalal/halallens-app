@@ -80,7 +80,9 @@
     "scan_label_ai": "İçerik Etiketini Tara (Görsel YZ)",
     "scan_label_ai_desc": "Paket üzerindeki içerik listesinin fotoğrafını çekin",
     "manual_input_ingredients": "İçerikleri Elle Girin",
-    "manual_input_ingredients_desc": "Ambalaj üzerindeki metni yazın veya yapıştırın"
+    "manual_input_ingredients_desc": "Ambalaj üzerindeki metni yazın veya yapıştırın",
+    "analyzing_image_label": "Görsel analiz ediliyor...",
+    "analyzing_image_Label": "Görsel analiz ediliyor..."
   },
   "history": {
     "title": "Tarama Geçmişi",
@@ -108,6 +110,8 @@
     "history_desc": "Önceden taradığınız ürünleri görün",
     "saved_title": "Kaydedilenler",
     "saved_desc": "Favori ürünlerinize hızlı erişim",
+    "nearby_businesses_title": "Yakındaki İşletmeler ve Reklamlar",
+    "nearby_businesses_desc": "Çevrenizdeki ortak işletmeleri ve teklifleri keşfedin",
     "language_title": "Dil",
     "theme_title": "Tema",
     "theme_desc": "Açık veya koyu mod arasında seçim yapın.",
@@ -215,7 +219,7 @@
     "default_ban_reason": "Topluluk Kurallarının veya Hizmet Şartlarının İhlali",
     "recheck_status": "Durumu Yeniden Kontrol Et",
     "logout_or_switch": "Çıkış Yap / Hesap Değiştir",
-    "terms_content": "Bienvenue sur Allo Halal. En créant un compte, vous acceptez les présentes Conditions d'utilisation.\n\n1. Objectif et vérification :\nAllo Halal aide les consommateurs à analyser les ingrédients des produits et à identifier les additifs halal, haram ou douteux. Bien que notre base de données et nos modèles d'IA soient continuellement mis à jour, les consommateurs doivent vérifier auprès des organismes de certification halal agréés en cas de doute.\n\n2. Responsabilité du compte :\nVous êtes responsable de la confidentialité de vos identifiants de connexion et de toutes les actions effectuées sous votre compte.\n\n3. Intégrité de la communauté :\nLes utilisateurs s'engagent à utiliser le service de manière appropriée et honnête.\n\nMerci de faire partie de la communauté Allo Halal.",
+    "terms_content": "Allo Halal'a hoş geldiniz. Bir hesap oluşturarak bu Kullanım Koşullarını kabul etmiş olursunuz.\n\n1. Amaç ve Doğrulama:\nAllo Halal, tüketicilerin ürün içeriklerini analiz etmelerine ve helal, haram veya şüpheli katkı maddelerini tespit etmelerine yardımcı olur. Veritabanımız ve yapay zeka modellerimiz sürekli güncellenmekle birlikte, şüphe durumunda yetkili helal sertifikasyon kuruluşlarına danışılmalıdır.\n\n2. Hesap Sorumluluğu:\nGiriş bilgilerinizin güvenliğini sağlamaktan ve hesabınız üzerinden gerçekleştirilen tüm işlemlerden siz sorumlusunuz.\n\n3. Topluluk İlkeleri:\nKullanıcılar hizmeti dürüst ve sorumlu bir şekilde kullanmayı taahhüt eder.\n\nAllo Halal topluluğunun bir parçası olduğunuz için teşekkür ederiz.",
     "and": "ve",
     "register_success": "Hesap oluşturuldu! Hoş geldiniz e-postası gönderildi.",
     "checking": "Kontrol ediliyor...",
@@ -238,5 +242,23 @@
     "tier_server": "🌱 YZ sunucu maliyetlerine destek olun",
     "tier_growth": "🌟 Geliştirmeyi ve yeni ürünleri hızlandırın",
     "tier_patron": "👑 Allo Halal Resmi Destekçisi olun"
+  },
+  "directory": {
+    "title": "Yakındaki İşletmeler ve Reklamlar",
+    "all": "Tümü",
+    "butcher": "Kasaplar",
+    "restaurant": "Restoranlar",
+    "grocery": "Marketler",
+    "bakery": "Fırınlar",
+    "search_hint": "İşletme, restoran, şehir ara...",
+    "directions": "Yol Tarifi",
+    "visit_offer": "Fırsatı Gör",
+    "verified_partner": "ONAYLI ORTAK",
+    "no_results": "İşletme bulunamadı",
+    "no_results_desc": "Aramanızı değiştirmeyi veya yenilemeyi deneyin.",
+    "refresh": "Yenile",
+    "gps_disabled": "Çevrenizdeki işletmeleri görmek için GPS'i açın.",
+    "gps_denied": "Mesafeyi hesaplamak için konum izni verin.",
+    "activate": "Etkinleştir"
   }
 }

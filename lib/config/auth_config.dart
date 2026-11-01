@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +17,12 @@ class AuthConfig {
   static bool _enableContributions = true;
   static bool _requireEmailVerification = false;
   static DateTime? _lastSyncedAt;
+
+  // Contribution Screen Texts ("Modèle à Prix Libre")
+  static String _contributionTitle = 'Modèle à Prix Libre';
+  static String _contributionSubtitle = 'Sans aucun abonnement • Libre • Sans engagement';
+  static String _contributionDesc =
+      'Allo Halal refuse les abonnements payants obligatoires. Soutenez le projet librement selon vos moyens pour nous aider à financer les serveurs IA et le développement.';
 
   // Contribution Presets & Tiers Configuration
   static List<double> _contributionPresets = [1.0, 3.0, 5.0, 10.0, 15.0];
@@ -39,13 +44,14 @@ class AuthConfig {
   static String _humanitarianOrganizationName = 'Global Halal Emergency Food Relief';
   static String _humanitarianLearnMoreUrl = 'https://allohalal.fr/humanitarian';
 
-  // Stripe Payment Gateway Configuration
-  static bool _enableStripe = true;
-  static String _stripeMode = 'test';
-  static String _stripePublishableKey =
-      'pk_test_51P9nVoRrokKxR1k7GYpiCd7B9ZVwmR7MBuYx28GmKrRsaOPUHmSMSIESH62ZVDwx6IFlN8xSz7br9cg0LzfLVbrK00uFBuBNzr';
-  static String _stripeSecretKey = '';
-  static String _stripeCurrency = 'EUR';
+  // Paddle Payment Gateway Configuration
+  static bool _enablePaddle = true;
+  static String _paddleMode = 'sandbox';
+  static String _paddleClientToken = 'test_ce1cedc75f9a35f3708af85800f';
+  static String _paddleApiKey =
+      'pdl_sdbx_apikey_01m68jwqg77x4ahhxcqc4bqtjp_MAsCYwrFYN9WZ7MtnHjyx2_AoN';
+  static String _paddleWebhookSecret = '';
+  static String _paddleCurrency = 'EUR';
 
   // ===========================================================================
   // Public Dynamic Getters (Used throughout the App & Services)
@@ -66,6 +72,15 @@ class AuthConfig {
 
   /// Configured preset amounts for free-will contribution (e.g. 1€, 3€, 5€, 10€, 15€)
   static List<double> get contributionPresets => _contributionPresets;
+
+  /// Main title for the Free-Will Contribution screen ("Modèle à Prix Libre")
+  static String get contributionTitle => _contributionTitle;
+
+  /// Subtitle / Commitment Tagline
+  static String get contributionSubtitle => _contributionSubtitle;
+
+  /// Explanation paragraph describing the free-will model
+  static String get contributionDesc => _contributionDesc;
 
   /// Default preselected contribution amount (e.g. 5€)
   static double get defaultContributionAmount => _defaultContributionAmount;
@@ -105,20 +120,30 @@ class AuthConfig {
   /// Learn more URL for humanitarian program
   static String get humanitarianLearnMoreUrl => _humanitarianLearnMoreUrl;
 
-  /// Whether Stripe payment gateway is enabled
-  static bool get isStripeEnabled => _enableStripe;
+  /// Whether Paddle payment gateway is enabled
+  static bool get isPaddleEnabled => _enablePaddle;
 
-  /// Stripe environment ('test' or 'live')
-  static String get stripeMode => _stripeMode;
+  /// Paddle environment ('sandbox' or 'live')
+  static String get paddleMode => _paddleMode;
 
-  /// Stripe Publishable Key for mobile integration
-  static String get stripePublishableKey => _stripePublishableKey;
+  /// Paddle Client-side Token for checkout initialization
+  static String get paddleClientToken => _paddleClientToken;
 
-  /// Stripe Secret Key for direct mobile test mode checkout creation
-  static String get stripeSecretKey => _stripeSecretKey;
+  /// Paddle API Key (Secret Key) for backend or direct checkout operations
+  static String get paddleApiKey => _paddleApiKey;
 
-  /// Stripe payment currency (e.g. 'EUR')
-  static String get stripeCurrency => _stripeCurrency;
+  /// Paddle Webhook Secret
+  static String get paddleWebhookSecret => _paddleWebhookSecret;
+
+  /// Paddle payment currency (e.g. 'EUR')
+  static String get paddleCurrency => _paddleCurrency;
+
+  /// Legacy compatibility aliases
+  static bool get isStripeEnabled => _enablePaddle;
+  static String get stripeMode => _paddleMode;
+  static String get stripePublishableKey => _paddleClientToken;
+  static String get stripeSecretKey => _paddleApiKey;
+  static String get stripeCurrency => _paddleCurrency;
 
   /// Timestamp of the last remote sync
   static DateTime? get lastSyncedAt => _lastSyncedAt;
@@ -250,6 +275,22 @@ class AuthConfig {
   }
 
   static void _parseContributionSettings(Map<String, dynamic> data) {
+    // 0. Screen Header Copy & Description ("Modèle à Prix Libre")
+    final title = data['contributionTitle'] ?? data['contribution_title'];
+    if (title is String && title.trim().isNotEmpty) {
+      _contributionTitle = title.trim();
+    }
+
+    final subtitle = data['contributionSubtitle'] ?? data['contribution_subtitle'];
+    if (subtitle is String && subtitle.trim().isNotEmpty) {
+      _contributionSubtitle = subtitle.trim();
+    }
+
+    final desc = data['contributionDesc'] ?? data['contribution_desc'];
+    if (desc is String && desc.trim().isNotEmpty) {
+      _contributionDesc = desc.trim();
+    }
+
     // 1. Presets List
     final presetsRaw = data['contributionPresets'] ?? data['contribution_presets'];
     if (presetsRaw != null) {
@@ -358,30 +399,42 @@ class AuthConfig {
       _humanitarianLearnMoreUrl = humUrl.trim();
     }
 
-    // 5. Stripe Payment Gateway Configuration
-    final stripeEnabled = data['enableStripe'] ?? data['enable_stripe'];
-    if (stripeEnabled != null) {
-      _enableStripe = stripeEnabled == true;
+    // 5. Paddle Payment Gateway Configuration
+    final paddleEnabled = data['enablePaddle'] ?? data['enable_paddle'] ?? data['enable_stripe'];
+    if (paddleEnabled != null) {
+      if (paddleEnabled is bool) {
+        _enablePaddle = paddleEnabled;
+      } else if (paddleEnabled is String) {
+        _enablePaddle = paddleEnabled.toLowerCase() == 'true';
+      } else if (paddleEnabled is num) {
+        _enablePaddle = paddleEnabled != 0;
+      }
     }
 
-    final mode = data['stripeMode'] ?? data['stripe_mode'];
+    final mode = data['paddleMode'] ?? data['paddle_mode'] ?? data['stripe_mode'];
     if (mode is String && mode.trim().isNotEmpty) {
-      _stripeMode = mode.trim().toLowerCase();
+      final m = mode.trim().toLowerCase();
+      _paddleMode = (m == 'live') ? 'live' : 'sandbox';
     }
 
-    final pubKey = data['stripePublishableKey'] ?? data['stripe_publishable_key'];
-    if (pubKey is String) {
-      _stripePublishableKey = pubKey.trim();
+    final clientToken = data['paddleClientToken'] ?? data['paddle_client_token'] ?? data['stripe_publishable_key'];
+    if (clientToken is String && clientToken.trim().isNotEmpty && !clientToken.trim().startsWith('pk_')) {
+      _paddleClientToken = clientToken.trim();
     }
 
-    final secKey = data['stripeSecretKey'] ?? data['stripe_secret_key'];
-    if (secKey is String && secKey.trim().isNotEmpty) {
-      _stripeSecretKey = secKey.trim();
+    final apiKey = data['paddleApiKey'] ?? data['paddle_api_key'] ?? data['stripe_secret_key'];
+    if (apiKey is String && apiKey.trim().startsWith('pdl_')) {
+      _paddleApiKey = apiKey.trim();
     }
 
-    final curr = data['stripeCurrency'] ?? data['stripe_currency'];
+    final webhookSec = data['paddleWebhookSecret'] ?? data['paddle_webhook_secret'] ?? data['stripe_webhook_secret'];
+    if (webhookSec is String && webhookSec.trim().isNotEmpty) {
+      _paddleWebhookSecret = webhookSec.trim();
+    }
+
+    final curr = data['paddleCurrency'] ?? data['paddle_currency'] ?? data['stripe_currency'];
     if (curr is String && curr.trim().isNotEmpty) {
-      _stripeCurrency = curr.trim().toUpperCase();
+      _paddleCurrency = curr.trim().toUpperCase();
     }
   }
 }
