@@ -55,65 +55,20 @@ class _NearbyBusinessesScreenState extends State<NearbyBusinessesScreen> {
         final sel = _selectedCategory.toLowerCase().trim();
         final adCat = ad.category.toLowerCase().trim();
 
-        if (adCat.isNotEmpty) {
-          if (adCat != sel) {
-            final text = '${ad.sponsorName} ${ad.title}'.toLowerCase();
-            if (sel == 'butcher' &&
-                (text.contains('bouch') || text.contains('viande') || text.contains('meat') || text.contains('butcher'))) {
-              // match fallback
-            } else if (sel == 'restaurant' &&
-                (text.contains('resto') || text.contains('restaurant') || text.contains('dine') || text.contains('grill'))) {
-              // match fallback
-            } else if (sel == 'grocery' &&
-                (text.contains('épicerie') || text.contains('epicerie') || text.contains('supermarch') || text.contains('superstore') || text.contains('market') || text.contains('grocery'))) {
-              // match fallback
-            } else if (sel == 'bakery' &&
-                (text.contains('boulang') || text.contains('pâtiss') || text.contains('patiss') || text.contains('bakery'))) {
-              // match fallback
-            } else {
-              return false;
-            }
-          }
-        } else {
-          final text = '${ad.sponsorName} ${ad.title}'.toLowerCase();
-          switch (sel) {
-            case 'butcher':
-              if (!text.contains('bouch') &&
-                  !text.contains('viande') &&
-                  !text.contains('meat') &&
-                  !text.contains('butcher')) {
-                return false;
-              }
-              break;
-            case 'restaurant':
-              if (!text.contains('resto') &&
-                  !text.contains('restaurant') &&
-                  !text.contains('dine') &&
-                  !text.contains('grill')) {
-                return false;
-              }
-              break;
-            case 'grocery':
-              if (!text.contains('épicerie') &&
-                  !text.contains('epicerie') &&
-                  !text.contains('supermarch') &&
-                  !text.contains('superstore') &&
-                  !text.contains('market') &&
-                  !text.contains('grocery')) {
-                return false;
-              }
-              break;
-            case 'bakery':
-              if (!text.contains('boulang') &&
-                  !text.contains('pâtiss') &&
-                  !text.contains('patiss') &&
-                  !text.contains('bakery')) {
-                return false;
-              }
-              break;
-            default:
-              return false;
-          }
+        // Exact match or normalized matching
+        final bool isMatch = adCat == sel ||
+            '${adCat}s' == sel ||
+            adCat == '${sel}s' ||
+            (sel.startsWith('resto') && adCat.startsWith('resto')) ||
+            ((sel.startsWith('bouch') || sel.contains('butcher')) &&
+                (adCat.startsWith('bouch') || adCat.contains('butcher'))) ||
+            ((sel.startsWith('épic') || sel.startsWith('epic') || sel.contains('grocer')) &&
+                (adCat.startsWith('épic') || adCat.startsWith('epic') || adCat.contains('grocer'))) ||
+            ((sel.startsWith('boulang') || sel.contains('baker')) &&
+                (adCat.startsWith('boulang') || adCat.contains('baker')));
+
+        if (!isMatch) {
+          return false;
         }
       }
 
@@ -123,7 +78,9 @@ class _NearbyBusinessesScreenState extends State<NearbyBusinessesScreen> {
         final matchTitle = ad.title.toLowerCase().contains(q);
         final matchSponsor = ad.sponsorName.toLowerCase().contains(q);
         final matchLocation = ad.locationName.toLowerCase().contains(q);
-        if (!matchTitle && !matchSponsor && !matchLocation) {
+        final matchCategory = ad.category.toLowerCase().contains(q);
+        final matchCertifier = ad.certifyingBody.toLowerCase().contains(q);
+        if (!matchTitle && !matchSponsor && !matchLocation && !matchCategory && !matchCertifier) {
           return false;
         }
       }
@@ -206,7 +163,7 @@ class _NearbyBusinessesScreenState extends State<NearbyBusinessesScreen> {
                 _buildLocationPermissionBanner(context, geoService),
 
               // 2. Search and Category filters
-              _buildSearchAndFilters(context),
+              _buildSearchAndFilters(context, geoService),
 
               // 3. Main Directory List
               Expanded(
@@ -306,34 +263,45 @@ class _NearbyBusinessesScreenState extends State<NearbyBusinessesScreen> {
     );
   }
 
-  Widget _buildSearchAndFilters(BuildContext context) {
+  Widget _buildSearchAndFilters(BuildContext context, GeoAdService geoService) {
     final categories = <Map<String, String>>[
       {'id': 'all', 'label': 'directory.all'.tr()},
-      {'id': 'restaurant', 'label': 'directory.restaurant'.tr()},
-      {'id': 'butcher', 'label': 'directory.butcher'.tr()},
-      {'id': 'grocery', 'label': 'directory.grocery'.tr()},
-      {'id': 'bakery', 'label': 'directory.bakery'.tr()},
     ];
 
-    // Dynamically include any categories fetched from Supabase / Admin panel
-    final knownKeys = {'all', 'restaurant', 'butcher', 'grocery', 'bakery'};
-    for (final c in GeoAdService.instance.categories) {
+    final knownIds = <String>{'all'};
+
+    // 1. Add categories dynamically from Supabase / Admin back-office via GeoAdService
+    for (final c in geoService.categories) {
       final trimmed = c.trim();
-      if (trimmed.isNotEmpty && !knownKeys.contains(trimmed.toLowerCase())) {
-        knownKeys.add(trimmed.toLowerCase());
+      final id = trimmed.toLowerCase();
+      if (trimmed.isNotEmpty && !knownIds.contains(id)) {
+        knownIds.add(id);
         categories.add({
-          'id': trimmed.toLowerCase(),
+          'id': id,
           'label': _getCategoryLabel(trimmed),
         });
       }
     }
-    for (final ad in GeoAdService.instance.allAds) {
+
+    // 2. Also add any active category from loaded ads in case an ad has a newly created category
+    for (final ad in geoService.allAds) {
       final c = ad.category.trim();
-      if (c.isNotEmpty && !knownKeys.contains(c.toLowerCase())) {
-        knownKeys.add(c.toLowerCase());
+      final id = c.toLowerCase();
+      if (c.isNotEmpty && !knownIds.contains(id)) {
+        knownIds.add(id);
         categories.add({
-          'id': c.toLowerCase(),
+          'id': id,
           'label': _getCategoryLabel(c),
+        });
+      }
+    }
+
+    // 3. Fallback only if completely offline and nothing was retrieved
+    if (categories.length == 1) {
+      for (final fc in ['Restaurants', 'Boucheries', 'Épiceries', 'Boulangeries']) {
+        categories.add({
+          'id': fc.toLowerCase(),
+          'label': _getCategoryLabel(fc),
         });
       }
     }
@@ -841,17 +809,19 @@ class _NearbyBusinessesScreenState extends State<NearbyBusinessesScreen> {
   }
 
   String _getCategoryLabel(String cat) {
-    switch (cat.toLowerCase()) {
-      case 'butcher':
-        return 'directory.butcher'.tr();
-      case 'restaurant':
-        return 'directory.restaurant'.tr();
-      case 'grocery':
-        return 'directory.grocery'.tr();
-      case 'bakery':
-        return 'directory.bakery'.tr();
-      default:
-        return cat.isNotEmpty ? cat : 'directory.all'.tr();
+    final lower = cat.toLowerCase().trim();
+    if (lower == 'butcher' || lower == 'boucherie' || lower == 'boucheries') {
+      return 'directory.butcher'.tr();
     }
+    if (lower == 'restaurant' || lower == 'restaurants') {
+      return 'directory.restaurant'.tr();
+    }
+    if (lower == 'grocery' || lower == 'épicerie' || lower == 'épiceries' || lower == 'epicerie' || lower == 'epiceries') {
+      return 'directory.grocery'.tr();
+    }
+    if (lower == 'bakery' || lower == 'boulangerie' || lower == 'boulangeries') {
+      return 'directory.bakery'.tr();
+    }
+    return cat.isNotEmpty ? cat : 'directory.all'.tr();
   }
 }
