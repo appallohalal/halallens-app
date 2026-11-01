@@ -32,8 +32,20 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   @override
   void initState() {
     super.initState();
-    if (AdConfig.bannerEnabled && AdService.instance.isInitialized) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadAd());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initAndLoad());
+  }
+
+  Future<void> _initAndLoad() async {
+    if (!mounted) return;
+    if (!AdService.instance.isInitialized) {
+      for (int i = 0; i < 25; i++) {
+        await Future.delayed(const Duration(milliseconds: 200));
+        if (!mounted) return;
+        if (AdService.instance.isInitialized) break;
+      }
+    }
+    if (mounted && AdConfig.bannerEnabled) {
+      _loadAd();
     }
   }
 

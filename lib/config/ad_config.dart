@@ -227,14 +227,18 @@ class AdConfig {
       final testIosAppId = row['test_ios_app_id'] as String?;
       _appId = (iosAppId != null && iosAppId.isNotEmpty)
           ? iosAppId
-          : (testIosAppId ?? '');
+          : ((testIosAppId != null && testIosAppId.isNotEmpty)
+              ? testIosAppId
+              : 'ca-app-pub-3940256099942544~1458002511');
 
       final iosBannerId =
           (row['ios_banner_id'] ?? row['banner_id_ios']) as String?;
       final testIosBannerId = row['test_ios_banner_id'] as String?;
       _bannerId = (iosBannerId != null && iosBannerId.isNotEmpty)
           ? iosBannerId
-          : (testIosBannerId ?? '');
+          : ((testIosBannerId != null && testIosBannerId.isNotEmpty)
+              ? testIosBannerId
+              : 'ca-app-pub-3940256099942544/2934735716');
 
       final iosInterstitialId = (row['ios_interstitial_id'] ??
           row['interstitial_id_ios']) as String?;
@@ -243,26 +247,34 @@ class AdConfig {
       _interstitialId =
           (iosInterstitialId != null && iosInterstitialId.isNotEmpty)
               ? iosInterstitialId
-              : (testIosInterstitialId ?? '');
+              : ((testIosInterstitialId != null && testIosInterstitialId.isNotEmpty)
+                  ? testIosInterstitialId
+                  : 'ca-app-pub-3940256099942544/4411468910');
 
       final iosAppOpenId = row['ios_app_open_id'] as String?;
       final testIosAppOpenId = row['test_ios_app_open_id'] as String?;
       _appOpenId = (iosAppOpenId != null && iosAppOpenId.isNotEmpty)
           ? iosAppOpenId
-          : (testIosAppOpenId ?? '');
+          : ((testIosAppOpenId != null && testIosAppOpenId.isNotEmpty)
+              ? testIosAppOpenId
+              : 'ca-app-pub-3940256099942544/5575463023');
 
       final iosNativeId = row['ios_native_id'] as String?;
       final testIosNativeId = row['test_ios_native_id'] as String?;
       _nativeId = (iosNativeId != null && iosNativeId.isNotEmpty)
           ? iosNativeId
-          : (testIosNativeId ?? '');
+          : ((testIosNativeId != null && testIosNativeId.isNotEmpty)
+              ? testIosNativeId
+              : 'ca-app-pub-3940256099942544/3986624511');
 
       final iosRewardedId =
           (row['ios_rewarded_id'] ?? row['rewarded_id_ios']) as String?;
       final testIosRewardedId = row['test_ios_rewarded_id'] as String?;
       _rewardedId = (iosRewardedId != null && iosRewardedId.isNotEmpty)
           ? iosRewardedId
-          : (testIosRewardedId ?? '');
+          : ((testIosRewardedId != null && testIosRewardedId.isNotEmpty)
+              ? testIosRewardedId
+              : 'ca-app-pub-3940256099942544/1712485313');
     } else {
       // 2. Android Unit IDs
       final androidAppId = row['android_app_id'] as String?;
