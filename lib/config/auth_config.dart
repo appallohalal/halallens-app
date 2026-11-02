@@ -44,14 +44,28 @@ class AuthConfig {
   static String _humanitarianOrganizationName = 'Global Halal Emergency Food Relief';
   static String _humanitarianLearnMoreUrl = 'https://allohalal.fr/humanitarian';
 
-  // Paddle Payment Gateway Configuration
-  static bool _enablePaddle = true;
-  static String _paddleMode = 'sandbox';
-  static String _paddleClientToken = 'test_ce1cedc75f9a35f3708af85800f';
-  static String _paddleApiKey =
-      'pdl_sdbx_apikey_01m68jwqg77x4ahhxcqc4bqtjp_MAsCYwrFYN9WZ7MtnHjyx2_AoN';
-  static String _paddleWebhookSecret = '';
-  static String _paddleCurrency = 'EUR';
+  // Stripe Payment Gateway Configuration (Dynamically synced from Server / Supabase)
+  static bool _enableStripe = true;
+  static String _stripeMode = 'test';
+  static String _stripePublishableKey = '';
+  static String _stripeSecretKey = '';
+  static String _stripeCurrency = 'EUR';
+
+  // PayPal Payment Gateway Configuration (Dynamically synced from Server / Supabase)
+  static bool _enablePaypal = true;
+  static String _paypalMode = 'sandbox';
+  static String _paypalClientId = '';
+  static String _paypalSecretKey = '';
+  static String _paypalMeUrl = '';
+  static String _paypalCurrency = 'EUR';
+
+  // Gmail SMTP Server Configuration for direct transactional delivery (Dynamically synced from Server / Supabase)
+  static String _smtpHost = 'smtp.gmail.com';
+  static int _smtpPort = 587;
+  static String _smtpUser = '';
+  static String _smtpPass = '';
+  static String _smtpFromEmail = '';
+  static String _smtpFromName = 'Allo Halal';
 
   // ===========================================================================
   // Public Dynamic Getters (Used throughout the App & Services)
@@ -120,30 +134,38 @@ class AuthConfig {
   /// Learn more URL for humanitarian program
   static String get humanitarianLearnMoreUrl => _humanitarianLearnMoreUrl;
 
-  /// Whether Paddle payment gateway is enabled
-  static bool get isPaddleEnabled => _enablePaddle;
+  /// Whether Stripe payment gateway is enabled
+  static bool get isStripeEnabled => _enableStripe;
+  static String get stripeMode => _stripeMode;
+  static String get stripePublishableKey => _stripePublishableKey;
+  static String get stripeSecretKey => _stripeSecretKey;
+  static String get stripeCurrency => _stripeCurrency;
 
-  /// Paddle environment ('sandbox' or 'live')
-  static String get paddleMode => _paddleMode;
+  /// True if a valid Stripe publishable key (starting with pk_test_ or pk_live_) is configured
+  static bool get hasValidStripePublishableKey {
+    final key = _stripePublishableKey.trim();
+    return key.startsWith('pk_test_') || key.startsWith('pk_live_');
+  }
 
-  /// Paddle Client-side Token for checkout initialization
-  static String get paddleClientToken => _paddleClientToken;
+  /// Whether PayPal payment gateway is enabled
+  static bool get isPaypalEnabled => _enablePaypal;
+  static String get paypalMode => _paypalMode;
+  static String get paypalClientId => _paypalClientId;
+  static String get paypalSecretKey => _paypalSecretKey;
+  static String get paypalMeUrl => _paypalMeUrl;
+  static String get paypalCurrency => _paypalCurrency;
 
-  /// Paddle API Key (Secret Key) for backend or direct checkout operations
-  static String get paddleApiKey => _paddleApiKey;
+  /// True if at least one payment gateway is enabled
+  static bool get isPaymentGatewayEnabled => _enableStripe || _enablePaypal;
+  static bool get isAnyPaymentGatewayEnabled => _enableStripe || _enablePaypal;
 
-  /// Paddle Webhook Secret
-  static String get paddleWebhookSecret => _paddleWebhookSecret;
-
-  /// Paddle payment currency (e.g. 'EUR')
-  static String get paddleCurrency => _paddleCurrency;
-
-  /// Legacy compatibility aliases
-  static bool get isStripeEnabled => _enablePaddle;
-  static String get stripeMode => _paddleMode;
-  static String get stripePublishableKey => _paddleClientToken;
-  static String get stripeSecretKey => _paddleApiKey;
-  static String get stripeCurrency => _paddleCurrency;
+  /// SMTP Credentials getters
+  static String get smtpHost => _smtpHost;
+  static int get smtpPort => _smtpPort;
+  static String get smtpUser => _smtpUser;
+  static String get smtpPass => _smtpPass;
+  static String get smtpFromEmail => _smtpFromEmail;
+  static String get smtpFromName => _smtpFromName;
 
   /// Timestamp of the last remote sync
   static DateTime? get lastSyncedAt => _lastSyncedAt;
@@ -399,42 +421,100 @@ class AuthConfig {
       _humanitarianLearnMoreUrl = humUrl.trim();
     }
 
-    // 5. Paddle Payment Gateway Configuration
-    final paddleEnabled = data['enablePaddle'] ?? data['enable_paddle'] ?? data['enable_stripe'];
-    if (paddleEnabled != null) {
-      if (paddleEnabled is bool) {
-        _enablePaddle = paddleEnabled;
-      } else if (paddleEnabled is String) {
-        _enablePaddle = paddleEnabled.toLowerCase() == 'true';
-      } else if (paddleEnabled is num) {
-        _enablePaddle = paddleEnabled != 0;
+    // 5. Stripe Payment Gateway Configuration
+    final stripeEnabled = data['enableStripe'] ?? data['enable_stripe'];
+    if (stripeEnabled != null) {
+      if (stripeEnabled is bool) {
+        _enableStripe = stripeEnabled;
+      } else if (stripeEnabled is String) {
+        _enableStripe = stripeEnabled.toLowerCase() == 'true';
+      } else if (stripeEnabled is num) {
+        _enableStripe = stripeEnabled != 0;
       }
     }
 
-    final mode = data['paddleMode'] ?? data['paddle_mode'] ?? data['stripe_mode'];
-    if (mode is String && mode.trim().isNotEmpty) {
-      final m = mode.trim().toLowerCase();
-      _paddleMode = (m == 'live') ? 'live' : 'sandbox';
+    final sMode = data['stripeMode'] ?? data['stripe_mode'];
+    if (sMode is String && sMode.trim().isNotEmpty) {
+      _stripeMode = sMode.trim().toLowerCase();
     }
 
-    final clientToken = data['paddleClientToken'] ?? data['paddle_client_token'] ?? data['stripe_publishable_key'];
-    if (clientToken is String && clientToken.trim().isNotEmpty && !clientToken.trim().startsWith('pk_')) {
-      _paddleClientToken = clientToken.trim();
+    final sPubKey = data['stripePublishableKey'] ?? data['stripe_publishable_key'];
+    if (sPubKey is String && sPubKey.trim().isNotEmpty) {
+      _stripePublishableKey = sPubKey.trim();
     }
 
-    final apiKey = data['paddleApiKey'] ?? data['paddle_api_key'] ?? data['stripe_secret_key'];
-    if (apiKey is String && apiKey.trim().startsWith('pdl_')) {
-      _paddleApiKey = apiKey.trim();
+    final sSecKey = data['stripeSecretKey'] ?? data['stripe_secret_key'];
+    if (sSecKey is String && sSecKey.trim().isNotEmpty) {
+      _stripeSecretKey = sSecKey.trim();
     }
 
-    final webhookSec = data['paddleWebhookSecret'] ?? data['paddle_webhook_secret'] ?? data['stripe_webhook_secret'];
-    if (webhookSec is String && webhookSec.trim().isNotEmpty) {
-      _paddleWebhookSecret = webhookSec.trim();
+    final sCurr = data['stripeCurrency'] ?? data['stripe_currency'];
+    if (sCurr is String && sCurr.trim().isNotEmpty) {
+      _stripeCurrency = sCurr.trim().toUpperCase();
     }
 
-    final curr = data['paddleCurrency'] ?? data['paddle_currency'] ?? data['stripe_currency'];
-    if (curr is String && curr.trim().isNotEmpty) {
-      _paddleCurrency = curr.trim().toUpperCase();
+    // 6. PayPal Payment Gateway Configuration
+    final paypalEnabled = data['enablePaypal'] ?? data['enable_paypal'];
+    if (paypalEnabled != null) {
+      if (paypalEnabled is bool) {
+        _enablePaypal = paypalEnabled;
+      } else if (paypalEnabled is String) {
+        _enablePaypal = paypalEnabled.toLowerCase() == 'true';
+      } else if (paypalEnabled is num) {
+        _enablePaypal = paypalEnabled != 0;
+      }
+    }
+
+    final ppMode = data['paypalMode'] ?? data['paypal_mode'];
+    if (ppMode is String && ppMode.trim().isNotEmpty) {
+      _paypalMode = ppMode.trim().toLowerCase() == 'live' ? 'live' : 'sandbox';
+    }
+
+    final ppClientId = data['paypalClientId'] ?? data['paypal_client_id'];
+    if (ppClientId is String && ppClientId.trim().isNotEmpty) {
+      _paypalClientId = ppClientId.trim();
+    }
+
+    final ppSecKey = data['paypalSecretKey'] ?? data['paypal_secret_key'];
+    if (ppSecKey is String && ppSecKey.trim().isNotEmpty) {
+      _paypalSecretKey = ppSecKey.trim();
+    }
+
+    final ppMe = data['paypalMeUrl'] ?? data['paypal_me_url'];
+    if (ppMe is String && ppMe.trim().isNotEmpty) {
+      _paypalMeUrl = ppMe.trim();
+    }
+
+    final ppCurr = data['paypalCurrency'] ?? data['paypal_currency'];
+    if (ppCurr is String && ppCurr.trim().isNotEmpty) {
+      _paypalCurrency = ppCurr.trim().toUpperCase();
+    }
+
+    // 7. SMTP Settings from Remote Config
+    final sHost = data['smtpHost'] ?? data['smtp_host'];
+    if (sHost is String && sHost.trim().isNotEmpty) {
+      _smtpHost = sHost.trim();
+    }
+    final sPort = data['smtpPort'] ?? data['smtp_port'];
+    if (sPort != null) {
+      final p = (sPort is num) ? sPort.toInt() : int.tryParse(sPort.toString());
+      if (p != null) _smtpPort = p;
+    }
+    final sUser = data['smtpUser'] ?? data['smtp_user'];
+    if (sUser is String && sUser.trim().isNotEmpty) {
+      _smtpUser = sUser.trim();
+    }
+    final sPass = data['smtpPass'] ?? data['smtp_pass'];
+    if (sPass is String && sPass.trim().isNotEmpty) {
+      _smtpPass = sPass.trim().replaceAll(' ', '');
+    }
+    final sFromEmail = data['smtpFromEmail'] ?? data['smtp_from_email'];
+    if (sFromEmail is String && sFromEmail.trim().isNotEmpty) {
+      _smtpFromEmail = sFromEmail.trim();
+    }
+    final sFromName = data['smtpFromName'] ?? data['smtp_from_name'];
+    if (sFromName is String && sFromName.trim().isNotEmpty) {
+      _smtpFromName = sFromName.trim();
     }
   }
 }

@@ -82,7 +82,12 @@
     "manual_input_ingredients": "Saisie manuelle des ingrédients",
     "manual_input_ingredients_desc": "Tapez ou collez le texte figurant sur l'emballage",
     "analyzing_image_label": "Analyse de l'image en cours...",
-    "analyzing_image_Label": "Analyse de l'image en cours..."
+    "analyzing_image_Label": "Analyse de l'image en cours...",
+    "certified_by": "Certifié par : {0}",
+    "official_verification": "Vérification Officielle Allo Halal",
+    "official_verification_desc": "La conformité et l'organisme certificateur de ce produit ont été validés officiellement par l'équipe Allo Halal.",
+    "no_certifier_detected": "Aucun organisme certificateur détecté sur l'emballage",
+    "recognized_certifier_desc": "Organisme de certification halal reconnu détecté"
   },
   "history": {
     "title": "Historique des Scans",

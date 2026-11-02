@@ -4,15 +4,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/auth_config.dart';
-import '../screens/paddle_checkout_screen.dart';
 import '../screens/support_screen.dart';
 import '../services/auth_service.dart';
-import '../services/paddle_service.dart';
 import '../theme/app_fonts.dart';
 import '../theme/app_theme.dart';
+import 'contribution_success_dialog.dart';
+import 'payment_method_bottom_sheet.dart';
 
 /// Free-will contribution model ("Prix libre") displayed in an elegant Bottom Sheet.
-/// Features a draggable handle, smooth scrolling, and in-app Paddle Checkout bottom sheet presentation.
+/// Features a draggable handle, smooth scrolling, and in-app Stripe & PayPal payment selection.
 class SupportDialog extends StatefulWidget {
   const SupportDialog({super.key});
 
@@ -64,7 +64,7 @@ class _SupportDialogState extends State<SupportDialog> {
   Future<void> _handleContribution() async {
     if (_isProcessing) return;
 
-    if (!AuthConfig.isPaddleEnabled) {
+    if (!AuthConfig.isPaymentGatewayEnabled) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -109,7 +109,9 @@ class _SupportDialogState extends State<SupportDialog> {
           ? user!.name.trim()
           : (user?.username.trim().isNotEmpty == true ? user!.username.trim() : '');
 
-      final sessionResult = await PaddleService.instance.createPaddleSession(
+      // Open the modern Payment Method Bottom Sheet (Stripe & PayPal)
+      final paid = await PaymentMethodBottomSheet.show(
+        context,
         amount: _contributionAmount,
         tier: tierName,
         donorName: donorName.isNotEmpty ? donorName : null,
@@ -119,61 +121,15 @@ class _SupportDialogState extends State<SupportDialog> {
 
       if (!mounted) return;
 
-      if (!sessionResult.success || sessionResult.url == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              sessionResult.message,
-              style: AppFonts.primary(context, color: Colors.white),
-            ),
-            backgroundColor: AppTheme.haramRed,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-        return;
-      }
-
-      // Open the Paddle payment gateway on a dedicated full screen
-      final paid = await PaddleCheckoutScreen.push(
-        context,
-        checkoutUrl: sessionResult.url!,
-        transactionId: sessionResult.transactionId,
-        amount: _contributionAmount,
-        tier: tierName,
-        userEmail: donorEmail.isNotEmpty ? donorEmail : null,
-        userName: donorName.isNotEmpty ? donorName : null,
-      );
-
-      if (!mounted) return;
-
       if (paid == true) {
-        if (sessionResult.transactionId != null) {
-          PaddleService.instance.syncCompletedTransaction(sessionResult.transactionId!);
-        }
         Navigator.pop(context); // Close the support selection bottom sheet
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(IconlyBold.shield_done, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'support.thank_you'.tr(),
-                    style: AppFonts.primary(
-                      context,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF088839),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        await ContributionSuccessDialog.show(
+          context,
+          amount: _contributionAmount,
+          tier: tierName,
+          donorName: donorName.isNotEmpty ? donorName : null,
+          donorEmail: donorEmail.isNotEmpty ? donorEmail : null,
+          paymentMethod: 'Stripe / PayPal',
         );
       }
     } finally {
@@ -720,13 +676,16 @@ class _SupportDialogState extends State<SupportDialog> {
                         color: Color(0xFF088839),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        'Powered by Paddle • 256-Bit SSL Encrypted',
-                        style: AppFonts.primary(
-                          context,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.getTextSecondary(context),
+                      Flexible(
+                        child: Text(
+                          'Powered by Stripe & PayPal • 256-Bit SSL Encrypted',
+                          textAlign: TextAlign.center,
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.getTextSecondary(context),
+                          ),
                         ),
                       ),
                     ],

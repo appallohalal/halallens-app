@@ -609,6 +609,8 @@ Output JSON Structure (MANDATORY):
 {
   "overall_status": "halal|haram|doubtful|not_food",
   "overall_reason": "Detailed summary of the entire product's status (IN $language).",
+  "certification_detected": true,
+  "certification_body": "Name of official Halal certifier if detected or mentioned on packaging/label (e.g. AVS, Achahada, Grande Mosquée de Paris, ARGML, Halal Services, etc.) or null",
   "ingredients": [
     {
       "name": "Original Name",
@@ -663,12 +665,21 @@ Output JSON Structure (MANDATORY):
         }
       }
 
+      final certRaw = data['certification_body']?.toString().trim();
+      final certifier = (certRaw != null && certRaw.isNotEmpty && certRaw != 'null')
+          ? certRaw
+          : null;
+      final isCertified = data['certification_detected'] == true ||
+          (certifier != null && certifier.isNotEmpty);
+
       return HalalResult(
         overallStatus: overallStatus,
         ingredientResults: ingredientResults,
         haramIngredients: haramList,
         doubtfulIngredients: doubtfulList,
         halalIngredients: halalList,
+        certifier: certifier,
+        isCertified: isCertified,
       );
     } catch (_) {
       return null;

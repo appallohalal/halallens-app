@@ -5,14 +5,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/auth_config.dart';
 import '../services/auth_service.dart';
-import '../services/paddle_service.dart';
 import '../theme/app_fonts.dart';
 import '../theme/app_theme.dart';
-import 'paddle_checkout_screen.dart';
+import '../widgets/contribution_success_dialog.dart';
+import '../widgets/payment_method_bottom_sheet.dart';
 
 /// Full-screen, high-fidelity Support & Free-will Contribution screen ("Prix libre").
 /// Replaces the legacy modal bottom sheet with a spacious, keyboard-friendly,
-/// dedicated native screen with sliders, presets, and direct Paddle Billing integration.
+/// dedicated native screen with sliders, presets, and Stripe & PayPal integration.
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
 
@@ -77,7 +77,7 @@ class _SupportScreenState extends State<SupportScreen> {
   Future<void> _handleContribution() async {
     if (_isProcessing) return;
 
-    if (!AuthConfig.isPaddleEnabled) {
+    if (!AuthConfig.isPaymentGatewayEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -122,7 +122,9 @@ class _SupportScreenState extends State<SupportScreen> {
           ? user!.name.trim()
           : (user?.username.trim().isNotEmpty == true ? user!.username.trim() : '');
 
-      final sessionResult = await PaddleService.instance.createPaddleSession(
+      // Open the modern Payment Method Bottom Sheet (Stripe & PayPal)
+      final paid = await PaymentMethodBottomSheet.show(
+        context,
         amount: _contributionAmount,
         tier: tierName,
         donorName: donorName.isNotEmpty ? donorName : null,
@@ -132,62 +134,18 @@ class _SupportScreenState extends State<SupportScreen> {
 
       if (!mounted) return;
 
-      if (!sessionResult.success || sessionResult.url == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              sessionResult.message,
-              style: AppFonts.primary(context, color: Colors.white),
-            ),
-            backgroundColor: AppTheme.haramRed,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-        return;
-      }
-
-      // Open the dedicated Paddle Checkout Screen
-      final paid = await PaddleCheckoutScreen.push(
-        context,
-        checkoutUrl: sessionResult.url!,
-        transactionId: sessionResult.transactionId,
-        amount: _contributionAmount,
-        tier: tierName,
-        userEmail: donorEmail.isNotEmpty ? donorEmail : null,
-        userName: donorName.isNotEmpty ? donorName : null,
-      );
-
-      if (!mounted) return;
-
       if (paid == true) {
-        if (sessionResult.transactionId != null) {
-          PaddleService.instance.syncCompletedTransaction(sessionResult.transactionId!);
-        }
-        Navigator.pop(context); // Return back to Settings
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(IconlyBold.shield_done, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'support.thank_you'.tr(),
-                    style: AppFonts.primary(
-                      context,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF088839),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        await ContributionSuccessDialog.show(
+          context,
+          amount: _contributionAmount,
+          tier: tierName,
+          donorName: donorName.isNotEmpty ? donorName : null,
+          donorEmail: donorEmail.isNotEmpty ? donorEmail : null,
+          paymentMethod: 'Stripe / PayPal',
         );
+        if (mounted) {
+          Navigator.pop(context); // Return back to Settings
+        }
       }
     } finally {
       if (mounted) {
@@ -567,23 +525,30 @@ class _SupportScreenState extends State<SupportScreen> {
                             ],
                           ),
                         ),
-                        if (AuthConfig.humanitarianCharityShare.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text(
-                              AuthConfig.humanitarianCharityShare,
-                              style: AppFonts.primary(
-                                context,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF088839),
+                        if (AuthConfig.humanitarianCharityShare.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text(
+                                AuthConfig.humanitarianCharityShare,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                                style: AppFonts.primary(
+                                  context,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF088839),
+                                ),
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
 
@@ -669,13 +634,16 @@ class _SupportScreenState extends State<SupportScreen> {
               children: [
                 const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF6B7280)),
                 const SizedBox(width: 6),
-                Text(
-                  'Paiement sécurisé via Paddle • Chiffré SSL 256 bits',
-                  style: AppFonts.primary(
-                    context,
-                    fontSize: 11.5,
-                    color: const Color(0xFF6B7280),
-                    fontWeight: FontWeight.w500,
+                Flexible(
+                  child: Text(
+                    'Paiement sécurisé via Stripe & PayPal • Chiffré SSL 256 bits',
+                    textAlign: TextAlign.center,
+                    style: AppFonts.primary(
+                      context,
+                      fontSize: 11.5,
+                      color: const Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -732,14 +700,18 @@ class _SupportScreenState extends State<SupportScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'support.btn_contribute'.tr(
-                          args: ['${_contributionAmount.toInt()}'],
-                        ),
-                        style: AppFonts.primary(
-                          context,
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          'support.btn_contribute'.tr(
+                            args: ['${_contributionAmount.toInt()}'],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],

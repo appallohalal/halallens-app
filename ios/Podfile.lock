@@ -34,6 +34,13 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 8.1)
     - nanopb (~> 3.30910.0)
   - Flutter (1.0.0)
+  - flutter_inappwebview_ios (0.0.1):
+    - Flutter
+    - flutter_inappwebview_ios/Core (= 0.0.1)
+    - OrderedSet (~> 6.0.3)
+  - flutter_inappwebview_ios/Core (0.0.1):
+    - Flutter
+    - OrderedSet (~> 6.0.3)
   - Google-Mobile-Ads-SDK (11.13.0):
     - GoogleUserMessagingPlatform (>= 1.1)
   - google_mobile_ads (5.3.1):
@@ -78,10 +85,74 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - OrderedSet (6.0.3)
   - PromisesObjC (2.4.1)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - Stripe (26.13.0):
+    - StripeApplePay (= 26.13.0)
+    - StripeCore (= 26.13.0)
+    - StripeIssuing (= 26.13.0)
+    - StripePayments (= 26.13.0)
+    - StripePaymentsUI (= 26.13.0)
+    - StripeUICore (= 26.13.0)
+  - stripe_ios (0.0.1):
+    - Flutter
+    - Stripe (~> 26.13.0)
+    - stripe_ios/stripe_ios (= 0.0.1)
+    - stripe_ios/stripe_objc (= 0.0.1)
+    - StripeApplePay (~> 26.13.0)
+    - StripeFinancialConnections (~> 26.13.0)
+    - StripePayments (~> 26.13.0)
+    - StripePaymentSheet (~> 26.13.0)
+    - StripePaymentsUI (~> 26.13.0)
+  - stripe_ios/stripe_ios (0.0.1):
+    - Flutter
+    - Stripe (~> 26.13.0)
+    - stripe_ios/stripe_objc
+    - StripeApplePay (~> 26.13.0)
+    - StripeFinancialConnections (~> 26.13.0)
+    - StripePayments (~> 26.13.0)
+    - StripePaymentSheet (~> 26.13.0)
+    - StripePaymentsUI (~> 26.13.0)
+  - stripe_ios/stripe_objc (0.0.1):
+    - Flutter
+    - Stripe (~> 26.13.0)
+    - StripeApplePay (~> 26.13.0)
+    - StripeFinancialConnections (~> 26.13.0)
+    - StripePayments (~> 26.13.0)
+    - StripePaymentSheet (~> 26.13.0)
+    - StripePaymentsUI (~> 26.13.0)
+  - StripeApplePay (26.13.0):
+    - StripeCore (= 26.13.0)
+  - StripeCore (26.13.0)
+  - StripeFinancialConnections (26.13.0):
+    - StripeCore (= 26.13.0)
+    - StripeUICore (= 26.13.0)
+  - StripeFinancialConnectionsLite (26.13.0):
+    - StripeCore (= 26.13.0)
+  - StripeIssuing (26.13.0):
+    - StripeCore (= 26.13.0)
+    - StripePayments (= 26.13.0)
+    - StripePaymentsUI (= 26.13.0)
+  - StripePayments (26.13.0):
+    - StripeCore (= 26.13.0)
+    - StripePayments/Stripe3DS2 (= 26.13.0)
+  - StripePayments/Stripe3DS2 (26.13.0):
+    - StripeCore (= 26.13.0)
+  - StripePaymentSheet (26.13.0):
+    - StripeApplePay (= 26.13.0)
+    - StripeCore (= 26.13.0)
+    - StripeFinancialConnectionsLite (= 26.13.0)
+    - StripePayments (= 26.13.0)
+    - StripePaymentsUI (= 26.13.0)
+  - StripePaymentsUI (26.13.0):
+    - StripeCore (= 26.13.0)
+    - StripePayments (= 26.13.0)
+    - StripeUICore (= 26.13.0)
+  - StripeUICore (26.13.0):
+    - StripeCore (= 26.13.0)
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
@@ -93,10 +164,12 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
+  - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
   - google_mobile_ads (from `.symlinks/plugins/google_mobile_ads/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - stripe_ios (from `.symlinks/plugins/stripe_ios/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
@@ -112,7 +185,18 @@ SPEC REPOS:
     - GoogleUserMessagingPlatform
     - GoogleUtilities
     - nanopb
+    - OrderedSet
     - PromisesObjC
+    - Stripe
+    - StripeApplePay
+    - StripeCore
+    - StripeFinancialConnections
+    - StripeFinancialConnectionsLite
+    - StripeIssuing
+    - StripePayments
+    - StripePaymentSheet
+    - StripePaymentsUI
+    - StripeUICore
 
 EXTERNAL SOURCES:
   connectivity_plus:
@@ -123,6 +207,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_messaging/ios"
   Flutter:
     :path: Flutter
+  flutter_inappwebview_ios:
+    :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
   google_mobile_ads:
     :path: ".symlinks/plugins/google_mobile_ads/ios"
   image_picker_ios:
@@ -131,6 +217,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/mobile_scanner/darwin"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  stripe_ios:
+    :path: ".symlinks/plugins/stripe_ios/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
@@ -146,6 +234,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 317270fec08a5d418fdbc8429282238cab3ac843
   FirebaseMessaging: 3b26e2cee503815e01c3701236b020aa9b576f09
   Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  flutter_inappwebview_ios: b89ba3482b96fb25e00c967aae065701b66e9b99
   Google-Mobile-Ads-SDK: 14f57f2dc33532a24db288897e26494640810407
   google_mobile_ads: 16ad301354fa6a7ea55770c6254bd4339bf8558b
   GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
@@ -154,8 +243,20 @@ SPEC CHECKSUMS:
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  Stripe: 2f6d025c3dc6c93890f39c75c4b85ccb96412cfc
+  stripe_ios: 407544c50d1da0cca0fe67b8f2ef068add93d163
+  StripeApplePay: 05c69df3ee93e82b6399e4c3c03bbf7ccd3568e5
+  StripeCore: 02c8ba87ddf9b838fc1d4a2d3650d416e0c9ddc1
+  StripeFinancialConnections: 35e44f12ca99c5db3d8069a29c0ffcc669ab0400
+  StripeFinancialConnectionsLite: 2321c88ad41e2477568c23a8b391890cc82c1b7b
+  StripeIssuing: 715e7b38b95bb1e50e72a318113ff3c80561aaf1
+  StripePayments: cf4557e925d39aa0c308b51bb3dcb4e34f817086
+  StripePaymentSheet: e250c2518ea55f6c81fa124320343535ccb458a6
+  StripePaymentsUI: c15703ef9d7029a771b6888e112ea24ff328cdba
+  StripeUICore: 64ea2cd22d214b711cfc39bce86863e1afa9993e
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 

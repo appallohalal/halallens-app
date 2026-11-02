@@ -52,6 +52,10 @@ dependencies:
   firebase_messaging: ^15.2.5
   url_launcher: ^6.3.1
   webview_flutter: ^4.13.1
+  flutter_svg: ^2.0.17
+  flutter_stripe: ^14.2.0
+  flutter_paypal_payment: ^1.0.8
+  mailer: ^7.2.2
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +87,8 @@ flutter:
     - assets/haram_logo.png
     - assets/doubtful_logo.png
     - assets/translations/
+    - assets/stripe_wordmark.svg
+    - assets/paypal-wordmark.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

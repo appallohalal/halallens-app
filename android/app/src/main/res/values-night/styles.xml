@@ -11,7 +11,7 @@
     <!-- Theme applied to the Android Window as soon as the process has started.
          Keeping @drawable/launch_background prevents any black screen flash
          while the Flutter engine initializes its first frame. -->
-    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+    <style name="NormalTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>

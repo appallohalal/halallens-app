@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
+import '../utils/halal_certifier_helper.dart';
 
-/// Represents a product fetched from Open Food Facts API.
+/// Represents a product fetched from Open Food Facts API or Allo Halal Supabase.
 class Product {
   final String barcode;
   final String name;
@@ -14,6 +15,10 @@ class Product {
   final String? manualStatus;
   final String? moderatorNote;
   final List<String> labels;
+  final String? certifier;
+  final bool isCertified;
+  final bool verifiedOfficial;
+  final String? certificationDetails;
 
   const Product({
     required this.barcode,
@@ -28,6 +33,10 @@ class Product {
     this.manualStatus,
     this.moderatorNote,
     this.labels = const [],
+    this.certifier,
+    this.isCertified = false,
+    this.verifiedOfficial = false,
+    this.certificationDetails,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -117,6 +126,29 @@ class Product {
     final imageUrl = product['image_front_url']?.toString() ??
         product['image_url']?.toString();
 
+    // Certification detection / resolution
+    final explicitCert = json['certifier']?.toString() ??
+        product['certifier']?.toString();
+    final explicitVerifiedOfficial = json['verifiedOfficial'] == true ||
+        json['verified_official'] == true ||
+        product['verified_official'] == true;
+    final explicitIsCertified = json['isCertified'] == true ||
+        json['is_certified'] == true ||
+        product['is_certified'] == true;
+    final certDetails = json['certificationDetails']?.toString() ??
+        product['certification_details']?.toString();
+
+    final detectedCert = explicitCert != null && explicitCert.trim().isNotEmpty
+        ? explicitCert.trim()
+        : HalalCertifierHelper.detectCertifier(
+            labels: labelsTags,
+            name: resolvedName,
+            brand: product['brands']?.toString(),
+            ingredients: resolvedIngredients,
+          );
+
+    final isCertFinal = explicitIsCertified || (detectedCert != null && detectedCert.isNotEmpty);
+
     return Product(
       barcode: product['code']?.toString() ?? json['code']?.toString() ?? '',
       name: resolvedName,
@@ -127,7 +159,13 @@ class Product {
       brands: product['brands']?.toString(),
       quantity: product['quantity']?.toString(),
       categories: product['categories']?.toString(),
+      manualStatus: json['manual_status']?.toString() ?? json['status']?.toString(),
+      moderatorNote: json['moderator_note']?.toString() ?? json['moderatorNote']?.toString(),
       labels: labelsTags,
+      certifier: detectedCert,
+      isCertified: isCertFinal,
+      verifiedOfficial: explicitVerifiedOfficial,
+      certificationDetails: certDetails,
     );
   }
 
@@ -142,7 +180,13 @@ class Product {
       'brands': brands,
       'quantity': quantity,
       'categories': categories,
+      'manualStatus': manualStatus,
+      'moderatorNote': moderatorNote,
       'labels': labels,
+      'certifier': certifier,
+      'isCertified': isCertified,
+      'verifiedOfficial': verifiedOfficial,
+      'certificationDetails': certificationDetails,
     };
   }
 
@@ -165,11 +209,17 @@ class Product {
       brands: json['brands'] as String?,
       quantity: json['quantity'] as String?,
       categories: json['categories'] as String?,
+      manualStatus: json['manualStatus'] as String?,
+      moderatorNote: json['moderatorNote'] as String?,
       labels:
           (json['labels'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      certifier: json['certifier'] as String?,
+      isCertified: json['isCertified'] == true,
+      verifiedOfficial: json['verifiedOfficial'] == true,
+      certificationDetails: json['certificationDetails'] as String?,
     );
   }
 

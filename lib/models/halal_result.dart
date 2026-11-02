@@ -36,6 +36,18 @@ class HalalResult {
   final List<String> doubtfulIngredients;
   final List<String> halalIngredients;
 
+  /// Official or detected Halal certification body (e.g. AVS, Achahada, Mosquée de Paris)
+  final String? certifier;
+
+  /// True if a certifier or official certification mark was detected or validated
+  final bool isCertified;
+
+  /// True if verified directly by Allo Halal moderator / admin
+  final bool verifiedOfficial;
+
+  /// Additional notes about certification
+  final String? certificationDetails;
+
   /// True when no official ingredient list was available and the verdict was
   /// estimated by the AI from the product identity (name, brand, category).
   final bool isEstimated;
@@ -46,6 +58,10 @@ class HalalResult {
     required this.haramIngredients,
     required this.doubtfulIngredients,
     required this.halalIngredients,
+    this.certifier,
+    this.isCertified = false,
+    this.verifiedOfficial = false,
+    this.certificationDetails,
     this.isEstimated = false,
   });
 
@@ -55,23 +71,39 @@ class HalalResult {
     'haramIngredients': haramIngredients,
     'doubtfulIngredients': doubtfulIngredients,
     'halalIngredients': halalIngredients,
+    'certifier': certifier,
+    'isCertified': isCertified,
+    'verifiedOfficial': verifiedOfficial,
+    'certificationDetails': certificationDetails,
     'isEstimated': isEstimated,
   };
 
   factory HalalResult.fromJson(Map<String, dynamic> json) {
     return HalalResult(
       overallStatus: HalalStatus.values.firstWhere(
-        (e) => e.name == json['overallStatus'],
+        (e) => e.name == json['overallStatus'] || e.name == json['overall_status'],
         orElse: () => HalalStatus.doubtful,
       ),
       ingredientResults:
-          (json['ingredientResults'] as List<dynamic>?)
+          (json['ingredientResults'] as List<dynamic>? ??
+                  json['ingredients'] as List<dynamic>?)
               ?.map((e) => IngredientResult.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       haramIngredients: List<String>.from(json['haramIngredients'] ?? []),
       doubtfulIngredients: List<String>.from(json['doubtfulIngredients'] ?? []),
       halalIngredients: List<String>.from(json['halalIngredients'] ?? []),
+      certifier: json['certifier']?.toString() ??
+          json['certification_body']?.toString() ??
+          json['certificationBody']?.toString(),
+      isCertified: json['isCertified'] == true ||
+          json['is_certified'] == true ||
+          json['certification_detected'] == true ||
+          (json['certifier'] != null && json['certifier'].toString().isNotEmpty) ||
+          (json['certification_body'] != null && json['certification_body'].toString().isNotEmpty),
+      verifiedOfficial: json['verifiedOfficial'] == true || json['verified_official'] == true,
+      certificationDetails: json['certificationDetails']?.toString() ??
+          json['certification_details']?.toString(),
       isEstimated: json['isEstimated'] == true || json['is_estimated'] == true,
     );
   }

@@ -520,71 +520,8 @@ class ResultScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // Moderator Verification Note Banner (if verified by Admin team)
-          if (product.moderatorNote != null && product.moderatorNote!.trim().isNotEmpty) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppTheme.isDark(context)
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
-                  width: 1.2,
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      IconlyBold.shield_done,
-                      color: Color(0xFF3B82F6),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Vérification Officielle Allo Halal',
-                          style: AppFonts.primary(
-                            context,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.isDark(context)
-                                ? const Color(0xFF93C5FD)
-                                : const Color(0xFF1D4ED8),
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          product.moderatorNote!.trim(),
-                          style: AppFonts.secondary(
-                            context,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.getTextPrimary(context),
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-          ],
+          // Halal Certification & Official Verification Banner
+          _buildCertificationSection(context, product, result),
 
           // Product info card
           GlassCard(
@@ -968,6 +905,266 @@ class ResultScreen extends StatelessWidget {
       return 'general.unknown_product'.tr();
     }
     return name;
+  }
+
+  Widget _buildCertificationSection(
+    BuildContext context,
+    Product product,
+    HalalResult result,
+  ) {
+    final effectiveCertifier = (product.certifier != null && product.certifier!.trim().isNotEmpty)
+        ? product.certifier!.trim()
+        : (result.certifier != null && result.certifier!.trim().isNotEmpty)
+            ? result.certifier!.trim()
+            : null;
+
+    final isOfficiallyVerified = product.verifiedOfficial || result.verifiedOfficial;
+    final hasCertifier = effectiveCertifier != null;
+    final hasModeratorNote = product.moderatorNote != null && product.moderatorNote!.trim().isNotEmpty;
+
+    // Case 1: Officially Verified by Allo Halal Admin team
+    if (isOfficiallyVerified || hasModeratorNote) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppTheme.isDark(context)
+                  ? const Color(0xFF0F2338)
+                  : const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                width: 1.4,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        IconlyBold.shield_done,
+                        color: Color(0xFF3B82F6),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'result.official_verification'.tr(),
+                            style: AppFonts.primary(
+                              context,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.isDark(context)
+                                  ? const Color(0xFF93C5FD)
+                                  : const Color(0xFF1D4ED8),
+                            ),
+                          ),
+                          Text(
+                            hasModeratorNote
+                                ? product.moderatorNote!.trim()
+                                : 'result.official_verification_desc'.tr(),
+                            style: AppFonts.secondary(
+                              context,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.getTextPrimary(context).withValues(alpha: 0.85),
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (hasCertifier) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF059669).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFF059669).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.verified_rounded,
+                          size: 14,
+                          color: Color(0xFF059669),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'result.certified_by'.tr(args: [effectiveCertifier]),
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.isDark(context)
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFF047857),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+      );
+    }
+
+    // Case 2: Known Certifier detected (AVS, Achahada, Mosquée de Paris, ARGML, etc.)
+    if (hasCertifier) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppTheme.isDark(context)
+                  ? const Color(0xFF063321)
+                  : const Color(0xFFECFDF5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                width: 1.3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.verified_rounded,
+                    color: Color(0xFF10B981),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'result.certified_by'.tr(args: [effectiveCertifier]),
+                        style: AppFonts.primary(
+                          context,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.isDark(context)
+                              ? const Color(0xFF6EE7B7)
+                              : const Color(0xFF065F46),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'result.recognized_certifier_desc'.tr(),
+                        style: AppFonts.secondary(
+                          context,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.getTextPrimary(context).withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+      );
+    }
+
+    // Case 3: Halal by ingredients, but no specific certification body detected on packaging
+    if (result.overallStatus == HalalStatus.halal) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppTheme.isDark(context)
+                  ? Colors.white.withValues(alpha: 0.04)
+                  : Colors.black.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.isDark(context)
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.08),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 16,
+                  color: AppTheme.getTextSecondary(context),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'result.no_certifier_detected'.tr(),
+                    style: AppFonts.secondary(
+                      context,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.getTextSecondary(context),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }
 

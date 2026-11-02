@@ -104,9 +104,31 @@ class ScannerProvider extends ChangeNotifier {
         );
 
         if (aiResult != null && aiResult.ingredientResults.isNotEmpty) {
-          _halalResult = overrideStatus != null
-              ? _enforceProductStatus(aiResult, overrideStatus, fetchedProduct)
+          final cert = fetchedProduct.certifier ?? aiResult.certifier;
+          final isCert = fetchedProduct.isCertified || aiResult.isCertified;
+          final isOfficial = fetchedProduct.verifiedOfficial || aiResult.verifiedOfficial;
+
+          final effectiveAiResult = (cert != aiResult.certifier ||
+                  isCert != aiResult.isCertified ||
+                  isOfficial != aiResult.verifiedOfficial)
+              ? HalalResult(
+                  overallStatus: aiResult.overallStatus,
+                  ingredientResults: aiResult.ingredientResults,
+                  haramIngredients: aiResult.haramIngredients,
+                  doubtfulIngredients: aiResult.doubtfulIngredients,
+                  halalIngredients: aiResult.halalIngredients,
+                  certifier: cert,
+                  isCertified: isCert,
+                  verifiedOfficial: isOfficial,
+                  certificationDetails: fetchedProduct.certificationDetails ??
+                      aiResult.certificationDetails,
+                  isEstimated: aiResult.isEstimated,
+                )
               : aiResult;
+
+          _halalResult = overrideStatus != null
+              ? _enforceProductStatus(effectiveAiResult, overrideStatus, fetchedProduct)
+              : effectiveAiResult;
           _usedAi = true;
           _isLoading = false;
           _saveToHistory(fetchedProduct.name, cleanBarcode, false);
@@ -143,6 +165,10 @@ class ScannerProvider extends ChangeNotifier {
           doubtfulIngredients:
               overrideStatus == HalalStatus.doubtful ? items : [],
           halalIngredients: overrideStatus == HalalStatus.halal ? items : [],
+          certifier: fetchedProduct.certifier,
+          isCertified: fetchedProduct.isCertified,
+          verifiedOfficial: fetchedProduct.verifiedOfficial,
+          certificationDetails: fetchedProduct.certificationDetails,
         );
         _usedAi = true;
         _isLoading = false;
@@ -260,6 +286,10 @@ class ScannerProvider extends ChangeNotifier {
       haramIngredients: haramList,
       doubtfulIngredients: doubtfulList,
       halalIngredients: halalList,
+      certifier: product.certifier ?? aiResult.certifier,
+      isCertified: product.isCertified || aiResult.isCertified,
+      verifiedOfficial: product.verifiedOfficial || aiResult.verifiedOfficial,
+      certificationDetails: product.certificationDetails ?? aiResult.certificationDetails,
     );
   }
 
