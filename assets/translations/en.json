@@ -83,7 +83,7 @@
     "manual_input_ingredients_desc": "Type or paste the text from the packaging",
     "analyzing_image_label": "Analyzing image...",
     "analyzing_image_Label": "Analyzing image...",
-    "certified_by": "Certified by: {0}",
+    "certified_by": "Certified by: {}",
     "official_verification": "Allo Halal Official Verification",
     "official_verification_desc": "The conformity and certification body of this product have been officially validated by the Allo Halal team.",
     "no_certifier_detected": "No certification body detected on packaging",

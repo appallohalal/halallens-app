@@ -725,7 +725,10 @@ class _NearbyBusinessesScreenState extends State<NearbyBusinessesScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'directory.certified_by'.tr(args: [ad.certifyingBody.trim()]),
+                            'directory.certified_by'
+                                .tr(args: [ad.certifyingBody.trim()])
+                                .replaceAll('{0}', ad.certifyingBody.trim())
+                                .replaceAll('{}', ad.certifyingBody.trim()),
                             style: AppFonts.primary(
                               context,
                               fontSize: 11.5,

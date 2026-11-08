@@ -82,7 +82,12 @@
     "manual_input_ingredients": "İçerikleri Elle Girin",
     "manual_input_ingredients_desc": "Ambalaj üzerindeki metni yazın veya yapıştırın",
     "analyzing_image_label": "Görsel analiz ediliyor...",
-    "analyzing_image_Label": "Görsel analiz ediliyor..."
+    "analyzing_image_Label": "Görsel analiz ediliyor...",
+    "certified_by": "Sertifikalandıran: {}",
+    "official_verification": "Resmi Allo Halal Doğrulaması",
+    "official_verification_desc": "Bu ürünün uygunluğu ve sertifika kurumu Allo Halal ekibi tarafından resmi olarak onaylanmıştır.",
+    "no_certifier_detected": "Ambalaj üzerinde sertifika kurumu tespit edilmedi",
+    "recognized_certifier_desc": "Tanınmış helal sertifika kurumu tespit edildi"
   },
   "history": {
     "title": "Tarama Geçmişi",

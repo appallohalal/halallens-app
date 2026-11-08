@@ -82,7 +82,12 @@
     "manual_input_ingredients": "إدخال المكونات يدوياً",
     "manual_input_ingredients_desc": "اكتب أو الصق النص الموجود على العبوة",
     "analyzing_image_label": "جارٍ تحليل الصورة...",
-    "analyzing_image_Label": "جارٍ تحليل الصورة..."
+    "analyzing_image_Label": "جارٍ تحليل الصورة...",
+    "certified_by": "معتمد من: {}",
+    "official_verification": "التحقق الرسمي من Allo Halal",
+    "official_verification_desc": "تم التحقق رسمياً من مطابقة المنتج وجهة الاعتماد من قِبل فريق Allo Halal.",
+    "no_certifier_detected": "لم يتم العثور على جهة اعتماد حلال على العبوة",
+    "recognized_certifier_desc": "تم اكتشاف جهة اعتماد حلال معترف بها"
   },
   "history": {
     "title": "سجل المسح",

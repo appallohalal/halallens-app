@@ -82,7 +82,12 @@
     "manual_input_ingredients": "Inserisci ingredienti manualmente",
     "manual_input_ingredients_desc": "Digita o incolla il testo dalla confezione",
     "analyzing_image_label": "Analisi immagine in corso...",
-    "analyzing_image_Label": "Analisi immagine in corso..."
+    "analyzing_image_Label": "Analisi immagine in corso...",
+    "certified_by": "Certificato da: {}",
+    "official_verification": "Verifica Ufficiale Allo Halal",
+    "official_verification_desc": "La conformità e l'ente di certificazione di questo prodotto sono stati convalidati ufficialmente dal team di Allo Halal.",
+    "no_certifier_detected": "Nessun ente di certificazione rilevato sulla confezione",
+    "recognized_certifier_desc": "Ente di certificazione halal riconosciuto rilevato"
   },
   "history": {
     "title": "Cronologia",

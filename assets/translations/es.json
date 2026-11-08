@@ -82,7 +82,12 @@
     "manual_input_ingredients": "Ingreso manual de ingredientes",
     "manual_input_ingredients_desc": "Escriba o pegue el texto del empaque",
     "analyzing_image_label": "Analizando imagen...",
-    "analyzing_image_Label": "Analizando imagen..."
+    "analyzing_image_Label": "Analizando imagen...",
+    "certified_by": "Certificado por: {}",
+    "official_verification": "Verificación Oficial Allo Halal",
+    "official_verification_desc": "La conformidad y el organismo de certificación de este producto han sido validados oficialmente por el equipo de Allo Halal.",
+    "no_certifier_detected": "No se detectó ningún organismo de certificación en el empaque",
+    "recognized_certifier_desc": "Organismo de certificación halal reconocido detectado"
   },
   "history": {
     "title": "Historial de Escaneo",

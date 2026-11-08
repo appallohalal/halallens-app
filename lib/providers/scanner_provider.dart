@@ -108,23 +108,47 @@ class ScannerProvider extends ChangeNotifier {
           final isCert = fetchedProduct.isCertified || aiResult.isCertified;
           final isOfficial = fetchedProduct.verifiedOfficial || aiResult.verifiedOfficial;
 
-          final effectiveAiResult = (cert != aiResult.certifier ||
-                  isCert != aiResult.isCertified ||
-                  isOfficial != aiResult.verifiedOfficial)
-              ? HalalResult(
-                  overallStatus: aiResult.overallStatus,
-                  ingredientResults: aiResult.ingredientResults,
-                  haramIngredients: aiResult.haramIngredients,
-                  doubtfulIngredients: aiResult.doubtfulIngredients,
-                  halalIngredients: aiResult.halalIngredients,
-                  certifier: cert,
-                  isCertified: isCert,
-                  verifiedOfficial: isOfficial,
-                  certificationDetails: fetchedProduct.certificationDetails ??
-                      aiResult.certificationDetails,
-                  isEstimated: aiResult.isEstimated,
-                )
-              : aiResult;
+          // Product Status Logic: A product featuring a recognized certification organization
+          // should not automatically default to "Mushbooh" (Doubtful). It displays as "HALAL" (green)
+          // as soon as the official certifier is identified.
+          HalalStatus resolvedStatus = aiResult.overallStatus;
+          List<IngredientResult> resolvedIngredients = List.from(aiResult.ingredientResults);
+          List<String> resolvedDoubtful = List.from(aiResult.doubtfulIngredients);
+          List<String> resolvedHalal = List.from(aiResult.halalIngredients);
+
+          if ((isCert || (cert != null && cert.isNotEmpty)) &&
+              overrideStatus == null &&
+              resolvedStatus != HalalStatus.haram &&
+              aiResult.haramIngredients.isEmpty) {
+            resolvedStatus = HalalStatus.halal;
+            for (int i = 0; i < resolvedIngredients.length; i++) {
+              if (resolvedIngredients[i].status == HalalStatus.doubtful) {
+                resolvedIngredients[i] = IngredientResult(
+                  ingredient: resolvedIngredients[i].ingredient,
+                  status: HalalStatus.halal,
+                  reason: cert != null && cert.isNotEmpty
+                      ? '${resolvedIngredients[i].reason} (Validé sous certification $cert)'
+                      : resolvedIngredients[i].reason,
+                );
+              }
+            }
+            resolvedHalal.addAll(resolvedDoubtful);
+            resolvedDoubtful.clear();
+          }
+
+          final effectiveAiResult = HalalResult(
+            overallStatus: resolvedStatus,
+            ingredientResults: resolvedIngredients,
+            haramIngredients: aiResult.haramIngredients,
+            doubtfulIngredients: resolvedDoubtful,
+            halalIngredients: resolvedHalal,
+            certifier: cert,
+            isCertified: isCert,
+            verifiedOfficial: isOfficial,
+            certificationDetails: fetchedProduct.certificationDetails ??
+                aiResult.certificationDetails,
+            isEstimated: aiResult.isEstimated,
+          );
 
           _halalResult = overrideStatus != null
               ? _enforceProductStatus(effectiveAiResult, overrideStatus, fetchedProduct)
@@ -138,8 +162,12 @@ class ScannerProvider extends ChangeNotifier {
         }
       }
 
-      // If product has a verified status in Supabase `products`, return that verdict directly
-      if (overrideStatus != null) {
+      // If product has a verified status or recognized certifier, return verdict directly
+      final bool hasCert = fetchedProduct.isCertified ||
+          (fetchedProduct.certifier != null && fetchedProduct.certifier!.isNotEmpty);
+      final HalalStatus? directStatus = overrideStatus ?? (hasCert ? HalalStatus.halal : null);
+
+      if (directStatus != null) {
         final rawList = fetchedProduct.ingredients
             .split(',')
             .map((s) => s.trim())
@@ -147,30 +175,32 @@ class ScannerProvider extends ChangeNotifier {
             .toList();
         final note = (fetchedProduct.moderatorNote?.isNotEmpty == true)
             ? fetchedProduct.moderatorNote!
-            : 'Vérifié par Allo Halal';
+            : (hasCert
+                ? 'Certifié Halal par ${fetchedProduct.certifier ?? 'Organisme reconnu'}'
+                : 'Vérifié par Allo Halal');
         final items = rawList.isNotEmpty ? rawList : [fetchedProduct.name];
         final ingResults = items
             .map(
               (item) => IngredientResult(
                 ingredient: item,
-                status: overrideStatus!,
+                status: directStatus,
                 reason: note,
               ),
             )
             .toList();
         _halalResult = HalalResult(
-          overallStatus: overrideStatus,
+          overallStatus: directStatus,
           ingredientResults: ingResults,
-          haramIngredients: overrideStatus == HalalStatus.haram ? items : [],
+          haramIngredients: directStatus == HalalStatus.haram ? items : [],
           doubtfulIngredients:
-              overrideStatus == HalalStatus.doubtful ? items : [],
-          halalIngredients: overrideStatus == HalalStatus.halal ? items : [],
+              directStatus == HalalStatus.doubtful ? items : [],
+          halalIngredients: directStatus == HalalStatus.halal ? items : [],
           certifier: fetchedProduct.certifier,
           isCertified: fetchedProduct.isCertified,
           verifiedOfficial: fetchedProduct.verifiedOfficial,
           certificationDetails: fetchedProduct.certificationDetails,
         );
-        _usedAi = true;
+        _usedAi = false;
         _isLoading = false;
         _saveToHistory(fetchedProduct.name, cleanBarcode, false);
         _syncScannedProductToSupabase(fetchedProduct, _halalResult!);

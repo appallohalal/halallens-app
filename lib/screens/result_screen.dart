@@ -907,6 +907,11 @@ class ResultScreen extends StatelessWidget {
     return name;
   }
 
+  String _formatCertifiedBy(String certifier) {
+    final localized = 'result.certified_by'.tr(args: [certifier]);
+    return localized.replaceAll('{0}', certifier).replaceAll('{}', certifier);
+  }
+
   Widget _buildCertificationSection(
     BuildContext context,
     Product product,
@@ -1019,7 +1024,7 @@ class ResultScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'result.certified_by'.tr(args: [effectiveCertifier]),
+                          _formatCertifiedBy(effectiveCertifier),
                           style: AppFonts.primary(
                             context,
                             fontSize: 12,
@@ -1087,7 +1092,7 @@ class ResultScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'result.certified_by'.tr(args: [effectiveCertifier]),
+                        _formatCertifiedBy(effectiveCertifier),
                         style: AppFonts.primary(
                           context,
                           fontSize: 13.5,

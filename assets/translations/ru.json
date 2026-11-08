@@ -82,7 +82,12 @@
     "manual_input_ingredients": "Ввести состав вручную",
     "manual_input_ingredients_desc": "Напечатайте или вставьте текст с упаковки",
     "analyzing_image_label": "Анализ изображения...",
-    "analyzing_image_Label": "Анализ изображения..."
+    "analyzing_image_Label": "Анализ изображения...",
+    "certified_by": "Сертифицировано: {}",
+    "official_verification": "Официальная верификация Allo Halal",
+    "official_verification_desc": "Соответствие и орган сертификации этого продукта официально проверены командой Allo Halal.",
+    "no_certifier_detected": "Орган сертификации на упаковке не обнаружен",
+    "recognized_certifier_desc": "Обнаружен признанный орган сертификации халяль"
   },
   "history": {
     "title": "История сканирования",

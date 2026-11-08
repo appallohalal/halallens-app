@@ -604,6 +604,9 @@ Internal Logic for Classification:
    - Purely plant-based items, minerals, synthetic chemicals.
    - Dairy (from Halal animals), Fish, and Eggs.
    - Specifically confirm "Plant-based Lecithin" or "Soy Lecithin" as Halal.
+4. "certification rule":
+   - If a recognized Halal certifier (e.g. AVS, Achahada, Grande Mosquée de Paris, ARGML, Halal Services, etc.) is detected on packaging, brand, or ingredients, all ambiguous additives, flavorings (arômes), and animal derivatives are vetted by that organization.
+   - A product with a recognized certifier MUST be classified as "halal" (NOT "doubtful" / "mushbooh"), unless an explicitly prohibited haram ingredient (such as pork or intoxicating alcohol) is present.
 
 Output JSON Structure (MANDATORY):
 {
@@ -672,8 +675,28 @@ Output JSON Structure (MANDATORY):
       final isCertified = data['certification_detected'] == true ||
           (certifier != null && certifier.isNotEmpty);
 
+      HalalStatus finalStatus = overallStatus;
+      if (isCertified &&
+          finalStatus != HalalStatus.haram &&
+          haramList.isEmpty) {
+        finalStatus = HalalStatus.halal;
+        for (int i = 0; i < ingredientResults.length; i++) {
+          if (ingredientResults[i].status == HalalStatus.doubtful) {
+            ingredientResults[i] = IngredientResult(
+              ingredient: ingredientResults[i].ingredient,
+              status: HalalStatus.halal,
+              reason: certifier != null
+                  ? '${ingredientResults[i].reason} (Validé sous certification $certifier)'
+                  : ingredientResults[i].reason,
+            );
+          }
+        }
+        halalList.addAll(doubtfulList);
+        doubtfulList.clear();
+      }
+
       return HalalResult(
-        overallStatus: overallStatus,
+        overallStatus: finalStatus,
         ingredientResults: ingredientResults,
         haramIngredients: haramList,
         doubtfulIngredients: doubtfulList,
