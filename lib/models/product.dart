@@ -39,6 +39,44 @@ class Product {
     this.certificationDetails,
   });
 
+  Product copyWith({
+    String? barcode,
+    String? name,
+    String? ingredients,
+    List<String>? additives,
+    List<ParsedIngredient>? parsedIngredients,
+    String? imageUrl,
+    String? brands,
+    String? quantity,
+    String? categories,
+    String? manualStatus,
+    String? moderatorNote,
+    List<String>? labels,
+    String? certifier,
+    bool? isCertified,
+    bool? verifiedOfficial,
+    String? certificationDetails,
+  }) {
+    return Product(
+      barcode: barcode ?? this.barcode,
+      name: name ?? this.name,
+      ingredients: ingredients ?? this.ingredients,
+      additives: additives ?? this.additives,
+      parsedIngredients: parsedIngredients ?? this.parsedIngredients,
+      imageUrl: imageUrl ?? this.imageUrl,
+      brands: brands ?? this.brands,
+      quantity: quantity ?? this.quantity,
+      categories: categories ?? this.categories,
+      manualStatus: manualStatus ?? this.manualStatus,
+      moderatorNote: moderatorNote ?? this.moderatorNote,
+      labels: labels ?? this.labels,
+      certifier: certifier ?? this.certifier,
+      isCertified: isCertified ?? this.isCertified,
+      verifiedOfficial: verifiedOfficial ?? this.verifiedOfficial,
+      certificationDetails: certificationDetails ?? this.certificationDetails,
+    );
+  }
+
   factory Product.fromJson(Map<String, dynamic> json) {
     final product = json['product'] as Map<String, dynamic>? ?? {};
 

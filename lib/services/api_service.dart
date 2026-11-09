@@ -80,6 +80,12 @@ class ApiService {
                     .toList() ??
                 [];
             final status = (p['manual_status'] ?? p['ai_status'])?.toString();
+            final explicitCert = p['certifier']?.toString();
+            final isCert = p['is_certified'] == true ||
+                (explicitCert != null && explicitCert.trim().isNotEmpty);
+            final verifiedOfficial = p['verified_official'] == true;
+            final certDetails = p['certification_details']?.toString();
+
             return Product(
               barcode: p['barcode']?.toString() ?? candidate,
               name: p['name']?.toString() ?? 'general.unknown_product'.tr(),
@@ -89,6 +95,10 @@ class ApiService {
               imageUrl: p['image_url']?.toString(),
               manualStatus: status,
               moderatorNote: p['moderator_note']?.toString(),
+              certifier: explicitCert?.trim(),
+              isCertified: isCert,
+              verifiedOfficial: verifiedOfficial,
+              certificationDetails: certDetails,
             );
           }
         }
@@ -114,6 +124,13 @@ class ApiService {
                   ?.map((e) => e.toString())
                   .toList() ??
               [];
+          final explicitCert = (p['certifier'] ?? p['certification_body'] ?? p['certificationBody'])?.toString();
+          final isCert = p['isCertified'] == true ||
+              p['is_certified'] == true ||
+              (explicitCert != null && explicitCert.trim().isNotEmpty);
+          final verifiedOfficial = p['verifiedOfficial'] == true || p['verified_official'] == true;
+          final certDetails = (p['certificationDetails'] ?? p['certification_details'])?.toString();
+
           return Product(
             barcode: p['barcode']?.toString() ?? primaryBarcode,
             name: p['name']?.toString() ?? 'general.unknown_product'.tr(),
@@ -123,6 +140,10 @@ class ApiService {
             imageUrl: p['imageUrl']?.toString(),
             manualStatus: p['status']?.toString(),
             moderatorNote: p['moderatorNote']?.toString(),
+            certifier: explicitCert?.trim(),
+            isCertified: isCert,
+            verifiedOfficial: verifiedOfficial,
+            certificationDetails: certDetails,
           );
         }
       }

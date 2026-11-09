@@ -42,6 +42,8 @@ class HalalCertifierHelper {
         'mosquée de lyon',
         'mosquee de lyon',
         'grande mosquée de lyon',
+        'isla delice',
+        'isla délice',
       ],
     ),
     KnownCertifierInfo(

@@ -150,13 +150,21 @@ class ScannerProvider extends ChangeNotifier {
             isEstimated: aiResult.isEstimated,
           );
 
+          _product = fetchedProduct.copyWith(
+            certifier: cert,
+            isCertified: isCert,
+            verifiedOfficial: isOfficial,
+            certificationDetails: fetchedProduct.certificationDetails ??
+                aiResult.certificationDetails,
+          );
+
           _halalResult = overrideStatus != null
-              ? _enforceProductStatus(effectiveAiResult, overrideStatus, fetchedProduct)
+              ? _enforceProductStatus(effectiveAiResult, overrideStatus, _product!)
               : effectiveAiResult;
           _usedAi = true;
           _isLoading = false;
           _saveToHistory(fetchedProduct.name, cleanBarcode, false);
-          _syncScannedProductToSupabase(fetchedProduct, _halalResult!);
+          _syncScannedProductToSupabase(_product!, _halalResult!);
           notifyListeners();
           return;
         }
