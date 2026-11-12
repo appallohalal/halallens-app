@@ -206,6 +206,7 @@
     "city": "Şehir",
     "city_hint": "örn. İstanbul, Ankara",
     "city_required": "Lütfen şehrinizi belirtin",
+    "city_select_from_list": "Lütfen listeden şehrinizi seçin",
     "sign_in": "Giriş Yap",
     "new_to_app": "Allo Halal'te yeni misiniz?",
     "create_account": "Hesap Oluştur",

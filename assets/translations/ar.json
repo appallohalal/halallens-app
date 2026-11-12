@@ -206,6 +206,7 @@
     "city": "المدينة",
     "city_hint": "مثال: الرياض، دبي",
     "city_required": "يرجى تحديد مدينتك",
+    "city_select_from_list": "يرجى اختيار مدينتك من القائمة",
     "sign_in": "تسجيل الدخول",
     "new_to_app": "جديد في Allo Halal؟",
     "create_account": "إنشاء حساب",

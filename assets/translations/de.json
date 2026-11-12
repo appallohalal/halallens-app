@@ -206,6 +206,7 @@
     "city": "Stadt",
     "city_hint": "z.B. Berlin, München",
     "city_required": "Bitte geben Sie Ihre Stadt an",
+    "city_select_from_list": "Bitte wählen Sie Ihre Stadt aus der Liste",
     "sign_in": "Anmelden",
     "new_to_app": "Neu bei Allo Halal?",
     "create_account": "Konto erstellen",

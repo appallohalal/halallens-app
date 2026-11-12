@@ -206,6 +206,7 @@
     "city": "City",
     "city_hint": "e.g. Paris, London",
     "city_required": "Please specify your city",
+    "city_select_from_list": "Please select your city from the list",
     "sign_in": "Sign In",
     "new_to_app": "New to Allo Halal?",
     "create_account": "Create Account",

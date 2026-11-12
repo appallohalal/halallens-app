@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../theme/app_fonts.dart';
 import '../services/auth_service.dart';
 import '../config/auth_config.dart';
+import '../widgets/city_autocomplete_field.dart';
 import 'static_page_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -37,10 +38,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
+  /// True once the city value was picked from the official suggestion list.
+  bool _citySelectedFromList = false;
+
+  bool get _isFrance {
+    final c = _countryController.text.trim().toLowerCase();
+    return c == 'france' || c == 'fr';
+  }
+
   @override
   void initState() {
     super.initState();
     _countryController.text = 'France';
+    _countryController.addListener(_onCountryChanged);
+  }
+
+  bool _wasFrance = true;
+  void _onCountryChanged() {
+    final nowFrance = _isFrance;
+    if (nowFrance != _wasFrance) {
+      _wasFrance = nowFrance;
+      _citySelectedFromList = false;
+      if (mounted) setState(() {});
+    }
   }
 
   @override
@@ -49,6 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _countryController.removeListener(_onCountryChanged);
     _countryController.dispose();
     _cityController.dispose();
     super.dispose();
@@ -376,15 +397,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // 6. City
-                  _buildTextField(
+                  // 6. City (predictive auto-complete when country is France)
+                  CityAutocompleteField(
                     controller: _cityController,
-                    label: 'auth.city'.tr(),
-                    hint: 'auth.city_hint'.tr(),
-                    icon: IconlyLight.discovery,
+                    isFrance: _isFrance,
+                    decoration: _inputDecoration(
+                      label: 'auth.city'.tr(),
+                      hint: 'auth.city_hint'.tr(),
+                      icon: IconlyLight.discovery,
+                    ),
+                    onSelectionChanged: (selected) => _citySelectedFromList = selected,
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'auth.city_required'.tr();
+                      }
+                      if (_isFrance &&
+                          !_citySelectedFromList &&
+                          CityAutocompleteField.apiReachable) {
+                        return 'auth.city_select_from_list'.tr();
                       }
                       return null;
                     },
@@ -590,7 +620,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         fontSize: 15,
         color: AppTheme.getTextPrimary(context),
       ),
-      decoration: InputDecoration(
+      decoration: _inputDecoration(
+        label: label,
+        hint: hint,
+        icon: icon,
+        suffixIcon: suffixIcon,
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String label,
+    required String hint,
+    required IconData icon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
         labelText: label,
         hintText: hint,
         labelStyle: AppFonts.primary(
@@ -621,7 +666,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 2),
         ),
-      ),
     );
   }
 }

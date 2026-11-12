@@ -206,6 +206,7 @@
     "city": "Город",
     "city_hint": "напр., Москва, Алматы",
     "city_required": "Пожалуйста, укажите ваш город",
+    "city_select_from_list": "Пожалуйста, выберите город из списка",
     "sign_in": "Войти",
     "new_to_app": "Впервые в Allo Halal?",
     "create_account": "Создать аккаунт",

@@ -206,6 +206,7 @@
     "city": "Cidade",
     "city_hint": "ex. Lisboa, São Paulo",
     "city_required": "Por favor, indique a sua cidade",
+    "city_select_from_list": "Por favor, selecione a sua cidade na lista",
     "sign_in": "Entrar",
     "new_to_app": "Novo no Allo Halal?",
     "create_account": "Criar conta",
