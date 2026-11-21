@@ -431,15 +431,17 @@ class ResultScreen extends StatelessWidget {
                     size: 18,
                     color: AppTheme.getTextPrimary(context),
                   ),
-                  label: Text(
-                    'result.report_error'.tr(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.primary(
-                      context,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.getTextPrimary(context),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'result.report_error'.tr(),
+                      maxLines: 1,
+                      style: AppFonts.primary(
+                        context,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.getTextPrimary(context),
+                      ),
                     ),
                   ),
                 ),

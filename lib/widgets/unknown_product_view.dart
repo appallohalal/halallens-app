@@ -115,7 +115,9 @@ class _UnknownProductViewState extends State<UnknownProductView> {
   }
 
   Future<void> _submit() async {
-    if (_frontPhoto == null && _ingredientsPhoto == null) {
+    final hasAnyPhoto =
+        _frontPhoto != null || _ingredientsPhoto != null || _certifierPhoto != null;
+    if (!hasAnyPhoto && !_notifyWhenReady) {
       setState(() {
         _errorMsg = 'unknown_product.need_photos'.tr();
       });
@@ -399,7 +401,10 @@ class _UnknownProductViewState extends State<UnknownProductView> {
                   ),
                 ],
 
-                if (_frontPhoto != null || _ingredientsPhoto != null) ...[
+                if (_frontPhoto != null ||
+                    _ingredientsPhoto != null ||
+                    _certifierPhoto != null ||
+                    _notifyWhenReady) ...[
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
@@ -422,16 +427,31 @@ class _UnknownProductViewState extends State<UnknownProductView> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Icon(Icons.send_rounded, size: 18),
-                      label: Text(
-                        _isSubmitting
-                            ? 'unknown_product.submitting'.tr()
-                            : 'unknown_product.submit_btn'.tr(),
-                        style: AppFonts.primary(
-                          context,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          : Icon(
+                              (_frontPhoto != null ||
+                                      _ingredientsPhoto != null ||
+                                      _certifierPhoto != null)
+                                  ? Icons.send_rounded
+                                  : Icons.notifications_active_outlined,
+                              size: 18,
+                            ),
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _isSubmitting
+                              ? 'unknown_product.submitting'.tr()
+                              : (_frontPhoto != null ||
+                                      _ingredientsPhoto != null ||
+                                      _certifierPhoto != null)
+                                  ? 'unknown_product.submit_btn'.tr()
+                                  : 'unknown_product.notify_checkbox'.tr(),
+                          maxLines: 1,
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
