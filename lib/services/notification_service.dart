@@ -34,6 +34,8 @@ class NotificationService {
 
   static const String _prefPrevCountryTopic = 'fcm_topic_country';
   static const String _prefPrevCityTopic = 'fcm_topic_city';
+  static const String _prefPrevUserEmailTopic = 'fcm_topic_user_email';
+  static const String _prefPrevUserIdTopic = 'fcm_topic_user_id';
 
   bool _isInitialized = false;
 
@@ -187,6 +189,8 @@ class NotificationService {
 
       final prevCountry = prefs.getString(_prefPrevCountryTopic) ?? '';
       final prevCity = prefs.getString(_prefPrevCityTopic) ?? '';
+      final prevEmailTopic = prefs.getString(_prefPrevUserEmailTopic) ?? '';
+      final prevIdTopic = prefs.getString(_prefPrevUserIdTopic) ?? '';
 
       if (prevCountry.isNotEmpty) {
         await messaging.unsubscribeFromTopic(prevCountry);
@@ -196,8 +200,27 @@ class NotificationService {
         await messaging.unsubscribeFromTopic(prevCity);
         await prefs.remove(_prefPrevCityTopic);
       }
+      if (prevEmailTopic.isNotEmpty) {
+        await messaging.unsubscribeFromTopic(prevEmailTopic);
+        await prefs.remove(_prefPrevUserEmailTopic);
+      }
+      if (prevIdTopic.isNotEmpty) {
+        await messaging.unsubscribeFromTopic(prevIdTopic);
+        await prefs.remove(_prefPrevUserIdTopic);
+      }
 
       if (user == null || !NotificationConfig.isEnabled) return;
+
+      if (user.email.trim().isNotEmpty) {
+        final emailTopic = 'user_${_sanitizeTopic(user.email)}';
+        await messaging.subscribeToTopic(emailTopic);
+        await prefs.setString(_prefPrevUserEmailTopic, emailTopic);
+      }
+      if (user.id.trim().isNotEmpty) {
+        final idTopic = 'user_${_sanitizeTopic(user.id)}';
+        await messaging.subscribeToTopic(idTopic);
+        await prefs.setString(_prefPrevUserIdTopic, idTopic);
+      }
 
       if (user.country.trim().isNotEmpty && user.country != 'Unknown') {
         final countryTopic = 'country_${_sanitizeTopic(user.country)}';
