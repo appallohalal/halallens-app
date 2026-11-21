@@ -23,6 +23,7 @@ class Product {
   final String? certificateProofUrl;
   final String? certificateProofName;
   final List<String> userAlerts;
+  final Map<String, List<String>> userAlertsI18n;
   final String? verifiedAt;
   final String? verificationUpdatedAt;
   final bool isCertified;
@@ -50,6 +51,7 @@ class Product {
     this.certificateProofUrl,
     this.certificateProofName,
     this.userAlerts = const [],
+    this.userAlertsI18n = const {},
     this.verifiedAt,
     this.verificationUpdatedAt,
     this.isCertified = false,
@@ -78,6 +80,7 @@ class Product {
     String? certificateProofUrl,
     String? certificateProofName,
     List<String>? userAlerts,
+    Map<String, List<String>>? userAlertsI18n,
     String? verifiedAt,
     String? verificationUpdatedAt,
     bool? isCertified,
@@ -105,12 +108,30 @@ class Product {
       certificateProofUrl: certificateProofUrl ?? this.certificateProofUrl,
       certificateProofName: certificateProofName ?? this.certificateProofName,
       userAlerts: userAlerts ?? this.userAlerts,
+      userAlertsI18n: userAlertsI18n ?? this.userAlertsI18n,
       verifiedAt: verifiedAt ?? this.verifiedAt,
       verificationUpdatedAt: verificationUpdatedAt ?? this.verificationUpdatedAt,
       isCertified: isCertified ?? this.isCertified,
       verifiedOfficial: verifiedOfficial ?? this.verifiedOfficial,
       certificationDetails: certificationDetails ?? this.certificationDetails,
     );
+  }
+
+  /// Returns user-facing alerts in [langCode], falling back to fr, en, or default userAlerts.
+  List<String> alertsForLocale(String langCode) {
+    final code = langCode.toLowerCase();
+    final localized = userAlertsI18n[code];
+    if (localized != null && localized.isNotEmpty) return localized;
+    final fr = userAlertsI18n['fr'];
+    if (fr != null && fr.isNotEmpty) return fr;
+    final en = userAlertsI18n['en'];
+    if (en != null && en.isNotEmpty) return en;
+    if (userAlertsI18n.isNotEmpty) {
+      for (final list in userAlertsI18n.values) {
+        if (list.isNotEmpty) return list;
+      }
+    }
+    return userAlerts;
   }
 
   factory Product.fromJson(Map<String, dynamic> json) {

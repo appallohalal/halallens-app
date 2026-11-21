@@ -47,6 +47,23 @@ class ApiService {
     return candidates;
   }
 
+  Map<String, List<String>> _parseAlertsI18n(dynamic raw) {
+    if (raw is! Map) return const {};
+    final map = <String, List<String>>{};
+    raw.forEach((key, val) {
+      if (val is List) {
+        final items = val
+            .map((e) => e.toString().trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+        if (items.isNotEmpty) {
+          map[key.toString().toLowerCase()] = items;
+        }
+      }
+    });
+    return map;
+  }
+
   /// Fetches product details for the given [barcode].
   /// 1. Checks Supabase `products` table directly (always online, instant).
   /// 2. Checks Admin backend `/scan` endpoint.
@@ -90,6 +107,7 @@ class ApiService {
                     .where((e) => e.isNotEmpty)
                     .toList() ??
                 [];
+            final alertsI18n = _parseAlertsI18n(p['user_alerts_i18n']);
 
             return Product(
               id: p['id']?.toString(),
@@ -108,6 +126,7 @@ class ApiService {
               certificateProofUrl: p['certificate_proof_url']?.toString(),
               certificateProofName: p['certificate_proof_name']?.toString(),
               userAlerts: alerts,
+              userAlertsI18n: alertsI18n,
               verifiedAt: p['verified_at']?.toString(),
               verificationUpdatedAt: p['verification_updated_at']?.toString(),
               isCertified: isCert,
@@ -149,6 +168,7 @@ class ApiService {
                   .where((e) => e.isNotEmpty)
                   .toList() ??
               [];
+          final alertsI18n = _parseAlertsI18n(p['userAlertsI18n'] ?? p['user_alerts_i18n']);
 
           return Product(
             id: p['id']?.toString(),
@@ -167,6 +187,7 @@ class ApiService {
             certificateProofUrl: (p['certificateProofUrl'] ?? p['certificate_proof_url'])?.toString(),
             certificateProofName: (p['certificateProofName'] ?? p['certificate_proof_name'])?.toString(),
             userAlerts: alerts,
+            userAlertsI18n: alertsI18n,
             verifiedAt: (p['verifiedAt'] ?? p['verified_at'])?.toString(),
             verificationUpdatedAt: (p['verificationUpdatedAt'] ?? p['verification_updated_at'])?.toString(),
             isCertified: isCert,

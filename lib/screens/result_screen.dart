@@ -267,9 +267,12 @@ class ResultScreen extends StatelessWidget {
           // Halal Certification & Official Verification Banner
           _buildCertificationSection(context, product, result),
 
-          // Dynamic User-Facing Alerts from Back-Office
-          if (product.userAlerts.isNotEmpty) ...[
-            _buildUserAlertsSection(context, product.userAlerts),
+          // Dynamic User-Facing Alerts from Back-Office (localized)
+          if (product.alertsForLocale(context.locale.languageCode).isNotEmpty) ...[
+            _buildUserAlertsSection(
+              context,
+              product.alertsForLocale(context.locale.languageCode),
+            ),
             const SizedBox(height: 14),
           ],
 
