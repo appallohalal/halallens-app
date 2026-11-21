@@ -3,6 +3,7 @@ import '../utils/halal_certifier_helper.dart';
 
 /// Represents a product fetched from Open Food Facts API or Allo Halal Supabase.
 class Product {
+  final String? id;
   final String barcode;
   final String name;
   final String ingredients;
@@ -16,11 +17,20 @@ class Product {
   final String? moderatorNote;
   final List<String> labels;
   final String? certifier;
+  final String? certificationStatus;
+  final bool hasPackagingLogo;
+  final String? certificateExpiresAt;
+  final String? certificateProofUrl;
+  final String? certificateProofName;
+  final List<String> userAlerts;
+  final String? verifiedAt;
+  final String? verificationUpdatedAt;
   final bool isCertified;
   final bool verifiedOfficial;
   final String? certificationDetails;
 
   const Product({
+    this.id,
     required this.barcode,
     required this.name,
     required this.ingredients,
@@ -34,12 +44,21 @@ class Product {
     this.moderatorNote,
     this.labels = const [],
     this.certifier,
+    this.certificationStatus,
+    this.hasPackagingLogo = false,
+    this.certificateExpiresAt,
+    this.certificateProofUrl,
+    this.certificateProofName,
+    this.userAlerts = const [],
+    this.verifiedAt,
+    this.verificationUpdatedAt,
     this.isCertified = false,
     this.verifiedOfficial = false,
     this.certificationDetails,
   });
 
   Product copyWith({
+    String? id,
     String? barcode,
     String? name,
     String? ingredients,
@@ -53,11 +72,20 @@ class Product {
     String? moderatorNote,
     List<String>? labels,
     String? certifier,
+    String? certificationStatus,
+    bool? hasPackagingLogo,
+    String? certificateExpiresAt,
+    String? certificateProofUrl,
+    String? certificateProofName,
+    List<String>? userAlerts,
+    String? verifiedAt,
+    String? verificationUpdatedAt,
     bool? isCertified,
     bool? verifiedOfficial,
     String? certificationDetails,
   }) {
     return Product(
+      id: id ?? this.id,
       barcode: barcode ?? this.barcode,
       name: name ?? this.name,
       ingredients: ingredients ?? this.ingredients,
@@ -71,6 +99,14 @@ class Product {
       moderatorNote: moderatorNote ?? this.moderatorNote,
       labels: labels ?? this.labels,
       certifier: certifier ?? this.certifier,
+      certificationStatus: certificationStatus ?? this.certificationStatus,
+      hasPackagingLogo: hasPackagingLogo ?? this.hasPackagingLogo,
+      certificateExpiresAt: certificateExpiresAt ?? this.certificateExpiresAt,
+      certificateProofUrl: certificateProofUrl ?? this.certificateProofUrl,
+      certificateProofName: certificateProofName ?? this.certificateProofName,
+      userAlerts: userAlerts ?? this.userAlerts,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      verificationUpdatedAt: verificationUpdatedAt ?? this.verificationUpdatedAt,
       isCertified: isCertified ?? this.isCertified,
       verifiedOfficial: verifiedOfficial ?? this.verifiedOfficial,
       certificationDetails: certificationDetails ?? this.certificationDetails,

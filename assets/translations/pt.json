@@ -87,7 +87,23 @@
     "official_verification": "Verificação Oficial Allo Halal",
     "official_verification_desc": "A conformidade e o organismo de certificação deste produto foram validados oficialmente pela equipe Allo Halal.",
     "no_certifier_detected": "Nenhum organismo de certificação detectado na embalagem",
-    "recognized_certifier_desc": "Organismo de certificação halal reconhecido detectado"
+    "recognized_certifier_desc": "Organismo de certificação halal reconhecido detectado",
+    "valid_until": "válido até {}",
+    "cert_expired": "expirado {}",
+    "certificate_checked_on": "Certificado verificado em {}",
+    "view_proof": "Ver comprovante",
+    "report_error": "Reportar um erro",
+    "share": "Partilhar",
+    "report_error_title": "Reportar um erro",
+    "report_error_type": "Tipo de erro",
+    "report_type_ingredients": "Ingredientes incorretos",
+    "report_type_certifier": "Organismo certificador",
+    "report_type_status": "Estado Halal",
+    "report_type_other": "Outro",
+    "report_error_hint": "Descreva o problema...",
+    "report_error_required": "Por favor descreva o erro.",
+    "report_error_submit": "Enviar relatório",
+    "report_error_success": "Obrigado! O seu relatório foi enviado."
   },
   "history": {
     "title": "Histórico de Escaneamento",
@@ -266,5 +282,25 @@
     "gps_disabled": "Ative o GPS para encontrar lojas ao seu redor.",
     "gps_denied": "Conceda permissão de localização para calcular distâncias exatas.",
     "activate": "Ativar"
+  },
+  "unknown_product": {
+    "title": "Unknown Product",
+    "subtitle": "It is not in our database yet.",
+    "help_prompt": "Barcode {}. Help us add it with 3 photos.",
+    "step1": "Front of the product",
+    "step2": "Ingredients list",
+    "step3": "Certification logo, if any",
+    "optional": "Optional",
+    "photograph_btn": "Photograph the product",
+    "notify_checkbox": "Notify me when the sheet is ready",
+    "submit_btn": "Submit product",
+    "submitting": "Submitting...",
+    "submitted_title": "Thank you for your contribution!",
+    "submitted_desc": "Your photos have been sent to our verification team.",
+    "submitted_notify_desc": "Your photos have been sent. You will be notified as soon as the product sheet is ready.",
+    "take_photo": "Take a photo",
+    "choose_gallery": "Choose from gallery",
+    "image_too_large": "Image is too large (max 10 MB).",
+    "need_photos": "Please add at least the front photo or ingredients photo."
   }
 }

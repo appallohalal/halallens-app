@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/halal_result.dart';
 import '../providers/scanner_provider.dart';
 import '../services/ad_service.dart';
+import '../services/product_community_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ad_native_widget.dart';
 import '../widgets/geo_ad_banner_widget.dart';
 import '../widgets/shared_widgets.dart';
+import '../widgets/unknown_product_view.dart';
 import 'package:iconly/iconly.dart';
 import '../models/history_item.dart';
 import '../models/product.dart';
@@ -14,7 +18,6 @@ import '../services/saved_product_service.dart';
 
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_fonts.dart';
-import 'text_scan_screen.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
@@ -164,276 +167,17 @@ class ResultScreen extends StatelessWidget {
     final isBarcodeNotFound = barcode != null && barcode.isNotEmpty;
 
     if (isBarcodeNotFound) {
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  IconlyLight.scan,
-                  size: 38,
-                  color: AppTheme.primaryBlue,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'result.fallback_title'.tr(),
-                textAlign: TextAlign.center,
-                style: AppFonts.primary(
-                  context,
-                  color: AppTheme.getTextPrimary(context),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.isDark(context)
-                      ? Colors.white.withValues(alpha: 0.06)
-                      : Colors.black.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppTheme.isDark(context)
-                        ? Colors.white12
-                        : Colors.black12,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.qr_code_2_rounded,
-                      size: 18,
-                      color: AppTheme.primaryBlue,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${"result.barcode_prefix".tr()}$barcode',
-                      style: AppFonts.primary(
-                        context,
-                        color: AppTheme.getTextPrimary(context),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'result.fallback_desc'.tr(),
-                textAlign: TextAlign.center,
-                style: AppFonts.primary(
-                  context,
-                  color: AppTheme.getTextSecondary(context),
-                  fontSize: 14,
-                  height: 1.45,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // Action 1: Camera Vision AI (Primary Hero Card)
-              InkWell(
-                onTap: () {
-                  AdService.instance.showInterstitial(
-                    onClosed: () {
-                      if (!context.mounted) return;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TextScanScreen(
-                            autoLaunchCamera: true,
-                            initialBarcode: barcode,
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryBlue.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          IconlyBold.camera,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'result.scan_label_ai'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'result.scan_label_ai_desc'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Action 2: Manual text entry (Secondary Card)
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TextScanScreen(
-                        autoLaunchCamera: false,
-                        initialBarcode: barcode,
-                      ),
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.getCardColor(context),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppTheme.isDark(context)
-                          ? Colors.white12
-                          : Colors.black12,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          IconlyLight.edit,
-                          color: AppTheme.primaryBlue,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'result.manual_input_ingredients'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                color: AppTheme.getTextPrimary(context),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'result.manual_input_ingredients_desc'.tr(),
-                              style: AppFonts.primary(
-                                context,
-                                color: AppTheme.getTextSecondary(context),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: AppTheme.getTextSecondary(context),
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Action 3: Scan another product
-              TextButton.icon(
-                onPressed: () {
-                  AdService.instance.showInterstitial(
-                    onClosed: () {
-                      if (!context.mounted) return;
-                      provider.reset();
-                      if (Navigator.canPop(context)) Navigator.pop(context);
-                    },
-                  );
-                },
-                icon: const Icon(IconlyLight.scan, size: 18),
-                label: Text(
-                  'result.scan_another'.tr(),
-                  style: AppFonts.primary(
-                    context,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      return UnknownProductView(
+        barcode: barcode,
+        onScanAnother: () {
+          AdService.instance.showInterstitial(
+            onClosed: () {
+              if (!context.mounted) return;
+              provider.reset();
+              if (Navigator.canPop(context)) Navigator.pop(context);
+            },
+          );
+        },
       );
     }
 
@@ -516,12 +260,18 @@ class ResultScreen extends StatelessWidget {
           // Status card
           StatusCard(
             status: result.overallStatus,
-            subtitle: _getStatusSubtitle(result),
+            subtitle: _buildBannerSubtitle(product, result),
           ),
           const SizedBox(height: 14),
 
           // Halal Certification & Official Verification Banner
           _buildCertificationSection(context, product, result),
+
+          // Dynamic User-Facing Alerts from Back-Office
+          if (product.userAlerts.isNotEmpty) ...[
+            _buildUserAlertsSection(context, product.userAlerts),
+            const SizedBox(height: 14),
+          ],
 
           // Product info card
           GlassCard(
@@ -659,6 +409,70 @@ class ResultScreen extends StatelessWidget {
               ],
             ),
           ),
+          // User Actions: Signaler une erreur & Partager
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showReportErrorSheet(context, product),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    side: BorderSide(color: AppTheme.getBorderColor(context)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.flag_outlined,
+                    size: 18,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                  label: Text(
+                    'result.report_error'.tr(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppFonts.primary(
+                      context,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextPrimary(context),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _shareProduct(context, product, result),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    side: BorderSide(color: AppTheme.getBorderColor(context)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.share_outlined,
+                    size: 18,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                  label: Text(
+                    'result.share'.tr(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppFonts.primary(
+                      context,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextPrimary(context),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           // AI/Local Analysis Badge (Ultra-Minimal Case - Text Only)
           Padding(
             padding: const EdgeInsets.only(top: 0, bottom: 6),
@@ -907,6 +721,236 @@ class ResultScreen extends StatelessWidget {
     return name;
   }
 
+  String? _formatExpiryMonthYear(String? iso) {
+    if (iso == null || iso.trim().isEmpty) return null;
+    final parsed = DateTime.tryParse(iso.trim());
+    if (parsed == null) return null;
+    final mm = parsed.month.toString().padLeft(2, '0');
+    return '$mm/${parsed.year}';
+  }
+
+  bool _isCertificateExpired(String? iso) {
+    if (iso == null || iso.trim().isEmpty) return false;
+    final parsed = DateTime.tryParse(iso.trim());
+    if (parsed == null) return false;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    return parsed.isBefore(todayDate);
+  }
+
+  String _formatDateFull(String? iso) {
+    if (iso == null || iso.trim().isEmpty) return '';
+    final parsed = DateTime.tryParse(iso.trim());
+    if (parsed == null) return '';
+    final dd = parsed.day.toString().padLeft(2, '0');
+    final mm = parsed.month.toString().padLeft(2, '0');
+    return '$dd/$mm/${parsed.year}';
+  }
+
+  String _buildBannerSubtitle(Product product, HalalResult result) {
+    final effectiveCertifier = (product.certifier != null && product.certifier!.trim().isNotEmpty)
+        ? product.certifier!.trim()
+        : (result.certifier != null && result.certifier!.trim().isNotEmpty)
+            ? result.certifier!.trim()
+            : null;
+
+    if (effectiveCertifier != null && result.overallStatus == HalalStatus.halal) {
+      final expiry = _formatExpiryMonthYear(product.certificateExpiresAt);
+      final isExpired = _isCertificateExpired(product.certificateExpiresAt);
+      if (expiry != null) {
+        if (isExpired) {
+          return '${_formatCertifiedBy(effectiveCertifier)} (${'result.cert_expired'.tr(args: [expiry])})';
+        }
+        return '${_formatCertifiedBy(effectiveCertifier)}, ${'result.valid_until'.tr(args: [expiry])}';
+      }
+      return _formatCertifiedBy(effectiveCertifier);
+    }
+    return _getStatusSubtitle(result);
+  }
+
+  Widget _buildUserAlertsSection(BuildContext context, List<String> alerts) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.getDoubtfulBgColor(context),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.getDoubtfulBorderColor(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: alerts.map((alertText) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.error_outline_rounded,
+                  size: 17,
+                  color: AppTheme.getDoubtfulTextColor(context),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    alertText,
+                    style: AppFonts.primary(
+                      context,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getDoubtfulTextColor(context),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Future<void> _shareProduct(
+    BuildContext context,
+    Product product,
+    HalalResult result,
+  ) async {
+    final statusStr = result.overallStatus.name.toUpperCase();
+    final certStr = (product.certifier ?? result.certifier ?? '').trim();
+    final buffer = StringBuffer()
+      ..writeln('${product.name}${product.brands != null && product.brands!.isNotEmpty ? " (${product.brands})" : ""}')
+      ..writeln('${'result.barcode_prefix'.tr()}${product.barcode}')
+      ..writeln('Statut: $statusStr');
+    if (certStr.isNotEmpty) {
+      buffer.writeln(_formatCertifiedBy(certStr));
+    }
+    buffer.write('Vérifié via Allo Halal');
+
+    await SharePlus.instance.share(
+      ShareParams(text: buffer.toString()),
+    );
+  }
+
+  void _showReportErrorSheet(BuildContext context, Product product) {
+    String selectedType = 'ingredients';
+    final msgController = TextEditingController();
+    bool isSending = false;
+    String? errorText;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.getCardColor(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'result.report_error_title'.tr(),
+                  style: AppFonts.primary(
+                    context,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: selectedType,
+                  decoration: InputDecoration(
+                    labelText: 'result.report_error_type'.tr(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  items: [
+                    DropdownMenuItem(value: 'ingredients', child: Text('result.report_type_ingredients'.tr())),
+                    DropdownMenuItem(value: 'certifier', child: Text('result.report_type_certifier'.tr())),
+                    DropdownMenuItem(value: 'status', child: Text('result.report_type_status'.tr())),
+                    DropdownMenuItem(value: 'other', child: Text('result.report_type_other'.tr())),
+                  ],
+                  onChanged: (v) => setSheetState(() => selectedType = v ?? 'other'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: msgController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'result.report_error_hint'.tr(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                if (errorText != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    errorText!,
+                    style: const TextStyle(color: AppTheme.haramRed, fontSize: 12),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: isSending
+                        ? null
+                        : () async {
+                            final msg = msgController.text.trim();
+                            if (msg.isEmpty) {
+                              setSheetState(() => errorText = 'result.report_error_required'.tr());
+                              return;
+                            }
+                            setSheetState(() {
+                              isSending = true;
+                              errorText = null;
+                            });
+                            try {
+                              await ProductCommunityService.submitProductErrorReport(
+                                barcode: product.barcode,
+                                productId: product.id,
+                                productName: product.name,
+                                reportType: selectedType,
+                                message: msg,
+                              );
+                              if (!ctx.mounted) return;
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('result.report_error_success'.tr())),
+                              );
+                            } catch (e) {
+                              setSheetState(() {
+                                isSending = false;
+                                errorText = e.toString().replaceFirst('Exception: ', '');
+                              });
+                            }
+                          },
+                    child: isSending
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : Text('result.report_error_submit'.tr()),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   String _formatCertifiedBy(String certifier) {
     final localized = 'result.certified_by'.tr(args: [certifier]);
     return localized.replaceAll('{0}', certifier).replaceAll('{}', certifier);
@@ -926,9 +970,11 @@ class ResultScreen extends StatelessWidget {
     final isOfficiallyVerified = product.verifiedOfficial || result.verifiedOfficial;
     final hasCertifier = effectiveCertifier != null;
     final hasModeratorNote = product.moderatorNote != null && product.moderatorNote!.trim().isNotEmpty;
+    final verifiedDateStr = _formatDateFull(product.verifiedAt ?? product.verificationUpdatedAt);
+    final proofUrl = product.certificateProofUrl;
 
-    // Case 1: Officially Verified by Allo Halal Admin team
-    if (isOfficiallyVerified || hasModeratorNote) {
+    // Case 1: Officially Verified by Allo Halal Admin team (only when badge checkbox is enabled)
+    if (isOfficiallyVerified) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -987,9 +1033,11 @@ class ResultScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            hasModeratorNote
-                                ? product.moderatorNote!.trim()
-                                : 'result.official_verification_desc'.tr(),
+                            verifiedDateStr.isNotEmpty
+                                ? 'result.certificate_checked_on'.tr(args: [verifiedDateStr])
+                                : (hasModeratorNote
+                                    ? product.moderatorNote!.trim()
+                                    : 'result.official_verification_desc'.tr()),
                             style: AppFonts.secondary(
                               context,
                               fontSize: 12,
@@ -1001,6 +1049,28 @@ class ResultScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    if (proofUrl != null && proofUrl.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: () {
+                          final uri = Uri.tryParse(proofUrl);
+                          if (uri != null) {
+                            launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          foregroundColor: const Color(0xFF1D4ED8),
+                        ),
+                        icon: const Icon(Icons.visibility_outlined, size: 16),
+                        label: Text(
+                          'result.view_proof'.tr(),
+                          style: AppFonts.primary(
+                            context,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
                 if (hasCertifier) ...[

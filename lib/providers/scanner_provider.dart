@@ -5,6 +5,7 @@ import '../config/app_config.dart';
 import '../models/product.dart';
 import '../models/halal_result.dart';
 import '../services/api_service.dart';
+import '../services/product_community_service.dart';
 import '../services/groq_halal_service.dart';
 import '../services/history_service.dart';
 import '../models/history_item.dart';
@@ -221,6 +222,7 @@ class ScannerProvider extends ChangeNotifier {
       _isLoading = false;
       _lastScannedBarcode = e.barcode ?? cleanBarcode;
       _errorMessage = e.message;
+      ProductCommunityService.logUnknownBarcodeScan(_lastScannedBarcode!);
       notifyListeners();
     } on ApiException catch (e) {
       _isLoading = false;

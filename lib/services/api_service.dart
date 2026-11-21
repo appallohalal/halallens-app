@@ -85,8 +85,14 @@ class ApiService {
                 (explicitCert != null && explicitCert.trim().isNotEmpty);
             final verifiedOfficial = p['verified_official'] == true;
             final certDetails = p['certification_details']?.toString();
+            final alerts = (p['user_alerts'] as List<dynamic>?)
+                    ?.map((e) => e.toString().trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList() ??
+                [];
 
             return Product(
+              id: p['id']?.toString(),
               barcode: p['barcode']?.toString() ?? candidate,
               name: p['name']?.toString() ?? 'general.unknown_product'.tr(),
               ingredients: p['ingredients_raw']?.toString() ?? '',
@@ -96,6 +102,14 @@ class ApiService {
               manualStatus: status,
               moderatorNote: p['moderator_note']?.toString(),
               certifier: explicitCert?.trim(),
+              certificationStatus: p['certification_status']?.toString(),
+              hasPackagingLogo: p['has_packaging_logo'] == true,
+              certificateExpiresAt: p['certificate_expires_at']?.toString(),
+              certificateProofUrl: p['certificate_proof_url']?.toString(),
+              certificateProofName: p['certificate_proof_name']?.toString(),
+              userAlerts: alerts,
+              verifiedAt: p['verified_at']?.toString(),
+              verificationUpdatedAt: p['verification_updated_at']?.toString(),
               isCertified: isCert,
               verifiedOfficial: verifiedOfficial,
               certificationDetails: certDetails,
@@ -130,8 +144,14 @@ class ApiService {
               (explicitCert != null && explicitCert.trim().isNotEmpty);
           final verifiedOfficial = p['verifiedOfficial'] == true || p['verified_official'] == true;
           final certDetails = (p['certificationDetails'] ?? p['certification_details'])?.toString();
+          final alerts = ((p['userAlerts'] ?? p['user_alerts']) as List<dynamic>?)
+                  ?.map((e) => e.toString().trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList() ??
+              [];
 
           return Product(
+            id: p['id']?.toString(),
             barcode: p['barcode']?.toString() ?? primaryBarcode,
             name: p['name']?.toString() ?? 'general.unknown_product'.tr(),
             ingredients: p['ingredientsRaw']?.toString() ?? '',
@@ -141,6 +161,14 @@ class ApiService {
             manualStatus: p['status']?.toString(),
             moderatorNote: p['moderatorNote']?.toString(),
             certifier: explicitCert?.trim(),
+            certificationStatus: (p['certificationStatus'] ?? p['certification_status'])?.toString(),
+            hasPackagingLogo: p['hasPackagingLogo'] == true || p['has_packaging_logo'] == true,
+            certificateExpiresAt: (p['certificateExpiresAt'] ?? p['certificate_expires_at'])?.toString(),
+            certificateProofUrl: (p['certificateProofUrl'] ?? p['certificate_proof_url'])?.toString(),
+            certificateProofName: (p['certificateProofName'] ?? p['certificate_proof_name'])?.toString(),
+            userAlerts: alerts,
+            verifiedAt: (p['verifiedAt'] ?? p['verified_at'])?.toString(),
+            verificationUpdatedAt: (p['verificationUpdatedAt'] ?? p['verification_updated_at'])?.toString(),
             isCertified: isCert,
             verifiedOfficial: verifiedOfficial,
             certificationDetails: certDetails,

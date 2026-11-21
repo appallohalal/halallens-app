@@ -87,7 +87,23 @@
     "official_verification": "التحقق الرسمي من Allo Halal",
     "official_verification_desc": "تم التحقق رسمياً من مطابقة المنتج وجهة الاعتماد من قِبل فريق Allo Halal.",
     "no_certifier_detected": "لم يتم العثور على جهة اعتماد حلال على العبوة",
-    "recognized_certifier_desc": "تم اكتشاف جهة اعتماد حلال معترف بها"
+    "recognized_certifier_desc": "تم اكتشاف جهة اعتماد حلال معترف بها",
+    "valid_until": "صالح حتى {}",
+    "cert_expired": "منتهي الصلاحية {}",
+    "certificate_checked_on": "تم التحقق من الشهادة في {}",
+    "view_proof": "عرض الدليل",
+    "report_error": "الإبلاغ عن خطأ",
+    "share": "مشاركة",
+    "report_error_title": "الإبلاغ عن خطأ",
+    "report_error_type": "نوع الخطأ",
+    "report_type_ingredients": "مكونات غير صحيحة",
+    "report_type_certifier": "جهة الاعتماد",
+    "report_type_status": "حالة الحلال",
+    "report_type_other": "أخرى",
+    "report_error_hint": "صف المشكلة...",
+    "report_error_required": "يرجى وصف الخطأ.",
+    "report_error_submit": "إرسال البلاغ",
+    "report_error_success": "شكراً لك! تم إرسال بلاغك بنجاح."
   },
   "history": {
     "title": "سجل المسح",
@@ -266,5 +282,25 @@
     "gps_disabled": "قم بتشغيل GPS لاكتشاف المتاجر القريبة منك.",
     "gps_denied": "امنح إذن الموقع لحساب المسافة بدقة.",
     "activate": "تفعيل"
+  },
+  "unknown_product": {
+    "title": "Unknown Product",
+    "subtitle": "It is not in our database yet.",
+    "help_prompt": "Barcode {}. Help us add it with 3 photos.",
+    "step1": "Front of the product",
+    "step2": "Ingredients list",
+    "step3": "Certification logo, if any",
+    "optional": "Optional",
+    "photograph_btn": "Photograph the product",
+    "notify_checkbox": "Notify me when the sheet is ready",
+    "submit_btn": "Submit product",
+    "submitting": "Submitting...",
+    "submitted_title": "Thank you for your contribution!",
+    "submitted_desc": "Your photos have been sent to our verification team.",
+    "submitted_notify_desc": "Your photos have been sent. You will be notified as soon as the product sheet is ready.",
+    "take_photo": "Take a photo",
+    "choose_gallery": "Choose from gallery",
+    "image_too_large": "Image is too large (max 10 MB).",
+    "need_photos": "Please add at least the front photo or ingredients photo."
   }
 }
