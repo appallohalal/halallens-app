@@ -104,16 +104,6 @@ class _UnknownProductViewState extends State<UnknownProductView> {
     );
   }
 
-  void _startPhotographFlow() {
-    if (_frontPhoto == null) {
-      _showSourcePicker(1);
-    } else if (_ingredientsPhoto == null) {
-      _showSourcePicker(2);
-    } else {
-      _showSourcePicker(3);
-    }
-  }
-
   Future<void> _submit() async {
     final hasAnyPhoto =
         _frontPhoto != null || _ingredientsPhoto != null || _certifierPhoto != null;
@@ -316,32 +306,6 @@ class _UnknownProductViewState extends State<UnknownProductView> {
                 ),
                 const SizedBox(height: 18),
 
-                // Primary action button: Photographier le produit
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton.icon(
-                    onPressed: _isSubmitting ? null : _startPhotographFlow,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: borderColor, width: 1.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    icon: const Icon(IconlyLight.camera, size: 20),
-                    label: Text(
-                      'unknown_product.photograph_btn'.tr(),
-                      style: AppFonts.primary(
-                        context,
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.getTextPrimary(context),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
                 // Notify me checkbox
                 InkWell(
                   onTap: _isSubmitting
@@ -427,24 +391,13 @@ class _UnknownProductViewState extends State<UnknownProductView> {
                                 color: Colors.white,
                               ),
                             )
-                          : Icon(
-                              (_frontPhoto != null ||
-                                      _ingredientsPhoto != null ||
-                                      _certifierPhoto != null)
-                                  ? Icons.send_rounded
-                                  : Icons.notifications_active_outlined,
-                              size: 18,
-                            ),
+                          : const Icon(Icons.send_rounded, size: 18),
                       label: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           _isSubmitting
                               ? 'unknown_product.submitting'.tr()
-                              : (_frontPhoto != null ||
-                                      _ingredientsPhoto != null ||
-                                      _certifierPhoto != null)
-                                  ? 'unknown_product.submit_btn'.tr()
-                                  : 'unknown_product.notify_checkbox'.tr(),
+                              : 'unknown_product.submit_btn'.tr(),
                           maxLines: 1,
                           style: AppFonts.primary(
                             context,

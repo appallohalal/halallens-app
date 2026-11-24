@@ -40,17 +40,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   /// True once the city value was picked from the official suggestion list.
   bool _citySelectedFromList = false;
+  late String _selectedCountry;
+  List<String> _availableCountries = const ['France'];
 
   bool get _isFrance {
-    final c = _countryController.text.trim().toLowerCase();
+    final c = _selectedCountry.trim().toLowerCase();
     return c == 'france' || c == 'fr';
   }
 
   @override
   void initState() {
     super.initState();
-    _countryController.text = 'France';
-    _countryController.addListener(_onCountryChanged);
+    _availableCountries = AuthConfig.allowedCountries;
+    _selectedCountry = _availableCountries.isNotEmpty ? _availableCountries.first : 'France';
+    _countryController.text = _selectedCountry;
+    _wasFrance = _isFrance;
+    _syncAllowedCountries();
+  }
+
+  Future<void> _syncAllowedCountries() async {
+    await AuthConfig.syncFromBackend();
+    if (!mounted) return;
+    final remote = AuthConfig.allowedCountries;
+    if (remote.isNotEmpty) {
+      setState(() {
+        _availableCountries = remote;
+        if (!_availableCountries.contains(_selectedCountry)) {
+          _selectedCountry = _availableCountries.first;
+          _countryController.text = _selectedCountry;
+          _onCountryChanged();
+        }
+      });
+    }
   }
 
   bool _wasFrance = true;
@@ -382,12 +403,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // 5. Country
-                  _buildTextField(
-                    controller: _countryController,
-                    label: 'auth.country'.tr(),
-                    hint: 'auth.country_hint'.tr(),
-                    icon: IconlyLight.location,
+                  // 5. Country (controlled dynamically from Back-Office)
+                  DropdownButtonFormField<String>(
+                    initialValue: _availableCountries.contains(_selectedCountry)
+                        ? _selectedCountry
+                        : _availableCountries.first,
+                    isExpanded: true,
+                    decoration: _inputDecoration(
+                      label: 'auth.country'.tr(),
+                      hint: 'auth.country_hint'.tr(),
+                      icon: IconlyLight.location,
+                    ),
+                    dropdownColor: AppTheme.getCardColor(context),
+                    style: AppFonts.primary(
+                      context,
+                      fontSize: 13.5,
+                      color: AppTheme.getTextPrimary(context),
+                    ),
+                    items: _availableCountries.map((country) {
+                      return DropdownMenuItem<String>(
+                        value: country,
+                        child: Text(country),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val == null) return;
+                      setState(() {
+                        _selectedCountry = val;
+                        _countryController.text = val;
+                      });
+                      _onCountryChanged();
+                    },
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'auth.country_required'.tr();

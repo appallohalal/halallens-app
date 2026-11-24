@@ -3,6 +3,7 @@ import 'package:iconly/iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
+import '../config/auth_config.dart';
 import '../services/auth_service.dart';
 import '../theme/app_fonts.dart';
 import '../theme/app_theme.dart';
@@ -28,26 +29,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isDeleting = false;
   String? _errorMessage;
 
-  static const List<String> _countries = [
-    'France',
-    'Belgique',
-    'Suisse',
-    'Canada',
-    'Maroc',
-    'Algérie',
-    'Tunisie',
-    'Royaume-Uni',
-    'Allemagne',
-    'Espagne',
-    'Italie',
-    'Turquie',
-    'États-Unis',
-  ];
+  late List<String> _countries;
 
   @override
   void initState() {
     super.initState();
     final user = AuthService.instance.currentUser;
+    _countries = List<String>.from(AuthConfig.allowedCountries);
+    if (_countries.isEmpty) {
+      _countries = ['France'];
+    }
 
     _nameController = TextEditingController(text: user?.name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
@@ -58,9 +49,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (_countries.contains(user.country)) {
         _selectedCountry = user.country;
       } else {
-        _selectedCountry = _countries.first;
+        _countries.insert(0, user.country);
+        _selectedCountry = user.country;
       }
+    } else {
+      _selectedCountry = _countries.first;
     }
+
+    AuthConfig.syncFromBackend().then((_) {
+      if (!mounted) return;
+      final synced = List<String>.from(AuthConfig.allowedCountries);
+      if (synced.isNotEmpty) {
+        if (!_countries.contains(_selectedCountry) || !synced.contains(_selectedCountry)) {
+          if (_selectedCountry.isNotEmpty && !synced.contains(_selectedCountry)) {
+            synced.insert(0, _selectedCountry);
+          }
+        }
+        setState(() {
+          _countries = synced;
+        });
+      }
+    });
   }
 
   @override

@@ -66,6 +66,7 @@ class AuthConfig {
   static String _smtpPass = '';
   static String _smtpFromEmail = '';
   static String _smtpFromName = 'Allo Halal';
+  static List<String> _allowedCountries = const ['France'];
 
   // ===========================================================================
   // Public Dynamic Getters (Used throughout the App & Services)
@@ -77,6 +78,9 @@ class AuthConfig {
 
   /// True if guest scanning is allowed without registration.
   static bool get allowGuestScan => _allowGuestScan && !_forceUserAuth;
+
+  /// Allowed countries for mobile user signup (controlled via Back-Office).
+  static List<String> get allowedCountries => List.unmodifiable(_allowedCountries);
 
   /// True if community product submissions and contributions are active.
   static bool get isContributionsEnabled => _enableContributions;
@@ -270,6 +274,7 @@ class AuthConfig {
     }
 
     _parseContributionSettings(data);
+    _parseAllowedCountries(data);
 
     _lastSyncedAt = DateTime.now();
   }
@@ -292,8 +297,22 @@ class AuthConfig {
     _requireEmailVerification = row['require_email_verification'] == true;
 
     _parseContributionSettings(row);
+    _parseAllowedCountries(row);
 
     _lastSyncedAt = DateTime.now();
+  }
+
+  static void _parseAllowedCountries(Map<String, dynamic> data) {
+    final raw = data['allowedCountries'] ?? data['allowed_countries'];
+    if (raw is List) {
+      final parsed = raw
+          .map((e) => e.toString().trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (parsed.isNotEmpty) {
+        _allowedCountries = parsed;
+      }
+    }
   }
 
   static void _parseContributionSettings(Map<String, dynamic> data) {

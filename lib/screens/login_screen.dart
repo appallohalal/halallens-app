@@ -105,6 +105,252 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.of(context).pop(false);
   }
 
+  Future<void> _showForgotPasswordModal() async {
+    final resetEmailCtrl = TextEditingController(text: _emailController.text.trim());
+    final codeCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+    int step = 1;
+    bool sending = false;
+    bool obscureNew = true;
+    String? modalError;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.getCardColor(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 22,
+                right: 22,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        step == 1
+                            ? 'Mot de passe oublié'
+                            : 'Nouveau mot de passe',
+                        style: AppFonts.primary(
+                          ctx,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.getTextPrimary(ctx),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.of(sheetCtx).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    step == 1
+                        ? 'Entrez votre adresse e-mail pour recevoir un code de vérification à 6 chiffres.'
+                        : 'Saisissez le code reçu par e-mail ainsi que votre nouveau mot de passe.',
+                    style: AppFonts.secondary(
+                      ctx,
+                      fontSize: 13,
+                      color: AppTheme.getTextSecondary(ctx),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (modalError != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.haramRed.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        modalError!,
+                        style: AppFonts.secondary(
+                          ctx,
+                          fontSize: 12.5,
+                          color: AppTheme.haramRed,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                  TextField(
+                    controller: resetEmailCtrl,
+                    enabled: step == 1 && !sending,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'auth.email'.tr(),
+                      prefixIcon: const Icon(IconlyLight.message, size: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                  if (step == 2) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: codeCtrl,
+                      enabled: !sending,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      decoration: InputDecoration(
+                        labelText: 'Code de vérification (6 chiffres)',
+                        counterText: '',
+                        prefixIcon: const Icon(IconlyLight.shield_done, size: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: newPassCtrl,
+                      enabled: !sending,
+                      obscureText: obscureNew,
+                      decoration: InputDecoration(
+                        labelText: 'Nouveau mot de passe',
+                        prefixIcon: const Icon(IconlyLight.lock, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureNew ? IconlyLight.hide : IconlyLight.show,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setModalState(() => obscureNew = !obscureNew);
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: sending
+                          ? null
+                          : () async {
+                              final email = resetEmailCtrl.text.trim();
+                              if (email.isEmpty || !email.contains('@')) {
+                                setModalState(() => modalError = 'auth.email_invalid'.tr());
+                                return;
+                              }
+                              setModalState(() {
+                                sending = true;
+                                modalError = null;
+                              });
+
+                              if (step == 1) {
+                                final res = await AuthService.instance
+                                    .requestPasswordResetCode(email);
+                                if (!sheetCtx.mounted) return;
+                                if (res.success) {
+                                  setModalState(() {
+                                    sending = false;
+                                    step = 2;
+                                  });
+                                } else {
+                                  setModalState(() {
+                                    sending = false;
+                                    modalError = res.message ?? 'Erreur lors de l\'envoi du code.';
+                                  });
+                                }
+                              } else {
+                                final code = codeCtrl.text.trim();
+                                final newPass = newPassCtrl.text;
+                                if (code.length != 6) {
+                                  setModalState(() {
+                                    sending = false;
+                                    modalError = 'Veuillez entrer le code à 6 chiffres.';
+                                  });
+                                  return;
+                                }
+                                if (newPass.length < 6) {
+                                  setModalState(() {
+                                    sending = false;
+                                    modalError = 'auth.password_min_error'.tr();
+                                  });
+                                  return;
+                                }
+                                final res = await AuthService.instance.confirmPasswordReset(
+                                  email: email,
+                                  code: code,
+                                  newPassword: newPass,
+                                );
+                                if (!sheetCtx.mounted) return;
+                                if (res.success) {
+                                  _emailController.text = email;
+                                  Navigator.of(sheetCtx).pop();
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Mot de passe réinitialisé avec succès. Vous pouvez vous connecter.',
+                                        ),
+                                        backgroundColor: AppTheme.halalGreen,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  setModalState(() {
+                                    sending = false;
+                                    modalError = res.message ?? 'Code invalide ou expiré.';
+                                  });
+                                }
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryBlue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: sending
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              step == 1
+                                  ? 'Envoyer le code'
+                                  : 'Réinitialiser le mot de passe',
+                              style: AppFonts.primary(
+                                ctx,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _navigateToRegister() {
     Navigator.push(
       context,
@@ -297,7 +543,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 22),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _isLoading ? null : _showForgotPasswordModal,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Mot de passe oublié ?',
+                        style: AppFonts.primary(
+                          context,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Submit Button
                   SizedBox(

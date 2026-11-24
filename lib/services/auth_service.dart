@@ -598,6 +598,80 @@ class AuthService extends ChangeNotifier {
     );
   }
 
+  /// Send a 6-digit password reset code to the user's email address
+  Future<AuthResponse> requestPasswordResetCode(String email) async {
+    try {
+      final url = Uri.parse('${AppConfig.backendBaseUrl}/auth/mobile/forgot-password');
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'action': 'request_code',
+              'email': email.trim().toLowerCase(),
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 && data['success'] == true) {
+        return AuthResponse(
+          success: true,
+          message: data['message']?.toString() ?? 'Verification code sent.',
+        );
+      }
+      return AuthResponse(
+        success: false,
+        message: data['error']?.toString() ?? 'Could not send reset code.',
+      );
+    } catch (e) {
+      return AuthResponse(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  /// Confirm 6-digit code and update password
+  Future<AuthResponse> confirmPasswordReset({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      final url = Uri.parse('${AppConfig.backendBaseUrl}/auth/mobile/forgot-password');
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'action': 'reset_password',
+              'email': email.trim().toLowerCase(),
+              'code': code.trim(),
+              'newPassword': newPassword,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 && data['success'] == true) {
+        return AuthResponse(
+          success: true,
+          message: data['message']?.toString() ?? 'Password updated.',
+        );
+      }
+      return AuthResponse(
+        success: false,
+        message: data['error']?.toString() ?? 'Could not reset password.',
+      );
+    } catch (e) {
+      return AuthResponse(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
   Future<void> _saveUserSession(AppUser user) async {
     try {
       final prefs = await SharedPreferences.getInstance();
