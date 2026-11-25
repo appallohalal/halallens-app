@@ -268,6 +268,7 @@ class MainActivity : FlutterFragmentActivity() {
             .setContentIntent(pendingIntent)
 
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify((System.currentTimeMillis() and 0xFFFFFFF).toInt(), builder.build())
+        val notificationId = "$title|$body".hashCode()
+        manager.notify(notificationId, builder.build())
     }
 }

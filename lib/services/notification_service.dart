@@ -38,6 +38,8 @@ class NotificationService {
   static const String _prefPrevUserIdTopic = 'fcm_topic_user_id';
 
   bool _isInitialized = false;
+  String? _lastForegroundFingerprint;
+  DateTime? _lastForegroundAt;
 
   Future<void> init() async {
     if (_isInitialized) return;
@@ -110,6 +112,17 @@ class NotificationService {
     final urlStr = (message.data['url'] as String? ?? '').trim();
 
     if (title.isEmpty && body.isEmpty) return;
+
+    // Suppress duplicate foreground notifications arriving within 10 seconds
+    final fingerprint = '${message.data['type'] ?? ''}|${message.data['barcode'] ?? ''}|$title|$body';
+    final now = DateTime.now();
+    if (_lastForegroundFingerprint == fingerprint &&
+        _lastForegroundAt != null &&
+        now.difference(_lastForegroundAt!).inSeconds < 10) {
+      return;
+    }
+    _lastForegroundFingerprint = fingerprint;
+    _lastForegroundAt = now;
 
     // Trigger only Native OS System Notification (Android Notification Tray)
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
