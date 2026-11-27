@@ -820,10 +820,11 @@ class ResultScreen extends StatelessWidget {
     Product product,
     HalalResult result,
   ) async {
-    final statusStr = result.overallStatus.name.toUpperCase();
+    final statusStr = result.overallStatus.labelKey.tr().toUpperCase();
+    final productName = _getLocalizedProductName(product.name);
     final certStr = (product.certifier ?? result.certifier ?? '').trim();
     final buffer = StringBuffer()
-      ..writeln('${product.name}${product.brands != null && product.brands!.isNotEmpty ? " (${product.brands})" : ""}')
+      ..writeln('$productName${product.brands != null && product.brands!.isNotEmpty ? " (${product.brands})" : ""}')
       ..writeln('${'result.barcode_prefix'.tr()}${product.barcode}')
       ..writeln('Statut: $statusStr');
     if (certStr.isNotEmpty) {

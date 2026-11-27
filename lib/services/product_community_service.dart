@@ -238,7 +238,7 @@ class ProductCommunityService {
               'certifier_image_url': certifierUrl,
             }),
           )
-          .timeout(const Duration(seconds: 8));
+          .timeout(const Duration(seconds: 15));
       if (createRes.statusCode >= 200 && createRes.statusCode < 300) {
         final created = json.decode(createRes.body) as List<dynamic>;
         if (created.isNotEmpty) {
@@ -298,7 +298,7 @@ class ProductCommunityService {
               'deviceId': deviceId,
             }),
           )
-          .timeout(const Duration(seconds: 8));
+          .timeout(const Duration(seconds: 15));
       if (res.statusCode >= 200 && res.statusCode < 300) return;
     } catch (_) {}
 
